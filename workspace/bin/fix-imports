@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+#
+# Adds the imports the codelab code needs, the way Android Studio would.
+#
+# The editor in this lab does not offer imports. This looks at which codelab
+# names App.kt uses and adds the import line for each one that is missing. It
+# also removes the one import that is always wrong here, which is the FHIR
+# model class Questionnaire without a new name. That class shares its name
+# with the form from the library, and Kotlin then picks the wrong one.
+#
+# The file is copied to ~/backups before it is changed.
+
+set -euo pipefail
+
+APP_FILE="$CODELAB_DIR/shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt"
+WRONG='import dev.ohs.fhir.model.r4.Questionnaire'
+
+# Each entry is a pattern that shows a name is in use, then a bar, then the
+# import line that name needs, then a bar, then the step whose numbered
+# comment the import belongs under.
+RULES=(
+    '(^|[^A-Za-z])Questionnaire\(|import dev.ohs.fhir.datacapture.Questionnaire|4'
+    '(^|[^A-Za-z])QuestionnaireConfig\(|import dev.ohs.fhir.datacapture.QuestionnaireConfig|4'
+    '[^A-Za-z]launch *[{(]|import kotlinx.coroutines.launch|4'
+    '(^|[^A-Za-z.])Json( |\.|\{)|import kotlinx.serialization.json.Json|5'
+    '(^|[^A-Za-z])TemplateExtractionEngine\.|import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine|6'
+    '(^|[^A-Za-z])FhirQuestionnaire([^A-Za-z]|$)|import dev.ohs.fhir.model.r4.Questionnaire as FhirQuestionnaire|6'
+    '(^|[^A-Za-z])Alignment\.|import androidx.compose.ui.Alignment|0'
+)
+
+[[ -f "$APP_FILE" ]] || { echo "Cannot find $APP_FILE" >&2; exit 1; }
+
+body="$(grep -vE '^[[:space:]]*(import |//)' "$APP_FILE")"
+add=()
+steps=()
+for rule in "${RULES[@]}"; do
+    step="${rule##*|}"
+    rest="${rule%|*}"
+    pattern="${rest%|*}"
+    line="${rest##*|}"
+    if grep -qE "$pattern" <<<"$body" && ! grep -qxF "$line" "$APP_FILE"; then
+        add+=("$line")
+        steps+=("$step")
+    fi
+done
+
+remove_wrong=0
+grep -qxF "$WRONG" "$APP_FILE" && remove_wrong=1
+
+if [[ "${#add[@]}" -eq 0 && "$remove_wrong" -eq 0 ]]; then
+    echo "The imports in App.kt already match the code. Nothing was changed."
+    exit 0
+fi
+
+backup="$HOME/backups/$(date '+%Y%m%d-%H%M%S')"
+mkdir -p "$backup"
+cp "$APP_FILE" "$backup/"
+
+# Each import goes on the line under the numbered comment of its step, which
+# the lab puts under the import group of the starter code. An import whose
+# comment is missing goes after the last import line.
+tmp="$(mktemp)"
+pairs=""
+for i in "${!add[@]}"; do
+    pairs+="${steps[$i]}|${add[$i]}"$'\n'
+done
+last_import="$(grep -nE '^import ' "$APP_FILE" | tail -n 1 | cut -d: -f1)"
+[[ -n "$last_import" ]] || last_import="$(grep -nE '^package ' "$APP_FILE" | head -n 1 | cut -d: -f1)"
+PAIRS="$pairs" LAST="$last_import" WRONG="$WRONG" REMOVE="$remove_wrong" awk '
+    BEGIN {
+        n = split(ENVIRON["PAIRS"], rows, "\n")
+        for (i = 1; i <= n; i++) {
+            if (rows[i] == "") continue
+            bar = index(rows[i], "|")
+            step[i] = substr(rows[i], 1, bar - 1)
+            text[i] = substr(rows[i], bar + 1)
+            count = i
+        }
+    }
+    # First pass over the file. Note which steps have their numbered comment.
+    FNR == NR {
+        if ($0 ~ /^\/\/ [4-6] Imports? /) marker[substr($0, 4, 1)] = 1
+        next
+    }
+    ENVIRON["REMOVE"] == "1" && $0 == ENVIRON["WRONG"] { next }
+    {
+        print
+        if ($0 ~ /^\/\/ [4-6] Imports? /) {
+            s = substr($0, 4, 1)
+            for (i = 1; i <= count; i++) if (step[i] == s) print text[i]
+        }
+        if (FNR == ENVIRON["LAST"] + 0) {
+            for (i = 1; i <= count; i++) if (!(step[i] in marker)) print text[i]
+        }
+    }
+' "$APP_FILE" "$APP_FILE" > "$tmp"
+cat "$tmp" > "$APP_FILE"
+rm -f "$tmp"
+
+if (( remove_wrong )); then
+    echo "Removed  $WRONG"
+    echo "         It is the FHIR data class, which has the same name as the form."
+fi
+for line in ${add[@]+"${add[@]}"}; do
+    echo "Added    $line"
+done
+echo "Your previous file is saved in $backup"
+echo "The app is rebuilding."

@@ -1,0 +1,62 @@
+# The codelab lab. The workspace holds the code, the build and the editor.
+# nginx is the only thing published, and it gives each part a path.
+#
+#   /       a start page with links to the two below
+#   /ide/   the editor
+#   /app/   the web app the learner is building
+#
+# Start it with ./lab-init.sh, which writes .env and the certificate first.
+
+name: sdc-codelab
+
+services:
+  workspace:
+    build:
+      context: ./workspace
+    image: sdc-codelab-workspace:local
+    container_name: sdc-workspace
+    init: true
+    restart: unless-stopped
+    environment:
+      PASSWORD: ${IDE_PASSWORD:?Run ./lab-init.sh, which creates the password}
+      # The address the learner's browser uses, which the editor's App pane
+      # needs to load the app.
+      LAB_URL: ${LAB_URL:?Run ./lab-init.sh, which works out the lab address}
+    volumes:
+      # Docker fills this volume from the image the first time it is used, so
+      # the checkout and the warm Gradle cache arrive with it. Learner edits
+      # then survive a restart of the container.
+      - home:/home/learner
+      # The learner manual, which the editor shows beside the code. It is
+      # mounted so an edit needs a restart of this container and no rebuild.
+      - ./course-manual.md:/opt/codelab/guide/course-manual.md:ro
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: sdc-nginx
+    restart: unless-stopped
+    depends_on:
+      - workspace
+    environment:
+      LAB_URL: ${LAB_URL:?Run ./lab-init.sh, which works out the lab address}
+    ports:
+      - "${LAB_HTTP_PORT:-80}:80"
+      - "${LAB_HTTPS_PORT:-443}:443"
+    volumes:
+      # lab-init.sh picks the HTTPS front, or the plain HTTP one for a local
+      # test with LAB_CERT=none.
+      - ./nginx/${LAB_NGINX_CONF:-lab-https}.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./nginx/lab-routes.conf:/etc/nginx/lab-routes.conf:ro
+      - ./nginx/html:/srv/www:ro
+      - ./certs:/etc/nginx/certs:ro
+      # Read only, and never used to fill the volume. nginx serves the build
+      # output straight from the learner's checkout.
+      - type: volume
+        source: home
+        target: /srv/home
+        read_only: true
+        volume:
+          nocopy: true
+
+volumes:
+  home:

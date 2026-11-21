@@ -1,0 +1,88 @@
+# The learner workspace for the Kotlin FHIR Data Capture codelab.
+#
+# It holds a JDK, the codelab checkout, a warm Gradle cache and code-server,
+# which is VS Code served to a browser. The web target needs no Android SDK
+# and no Android Studio.
+
+FROM eclipse-temurin:21-jdk
+
+ARG CODE_SERVER_VERSION=4.145.2
+ARG CODELAB_REPO=https://github.com/ohs-foundation/kotlin-fhir-data-capture.git
+# The commit the solution files in solutions/ were written against. Change
+# both together.
+ARG CODELAB_REF=15d534d67c0acdf9a7e264aee53d1320c91ab5cc
+
+# libatomic1 is needed by the Node.js binary that the Kotlin Gradle plugin
+# downloads. Without it the Wasm build stops with exit code 127.
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      ca-certificates curl git inotify-tools less libatomic1 nano vim \
+ && curl -fsSL -o /tmp/code-server.deb \
+      "https://github.com/coder/code-server/releases/download/v${CODE_SERVER_VERSION}/code-server_${CODE_SERVER_VERSION}_amd64.deb" \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/code-server.deb \
+ && rm -rf /tmp/code-server.deb /var/lib/apt/lists/*
+
+# One unprivileged account with uid 1000. The base image may already use that
+# uid for an account named ubuntu, which is removed first.
+RUN (id ubuntu >/dev/null 2>&1 && userdel -r ubuntu || true) \
+ && useradd --create-home --uid 1000 --shell /bin/bash learner \
+ && chmod 755 /home/learner
+
+COPY --chown=learner:learner solutions /opt/codelab/solutions
+
+USER learner
+WORKDIR /home/learner
+ENV CODELAB_DIR=/home/learner/kotlin-fhir-data-capture/codelabs
+
+# A sparse checkout of the pinned commit, the same shape the codelab asks for.
+#
+# The lab then adds one thing to the starter code. The published starter marks
+# each place for code with a numbered comment but has none for imports,
+# because Android Studio adds those. Three numbered comments are put under the
+# import group so a learner can see where each step's imports go. The change
+# is committed, so the checkout is clean and step reset returns to it.
+RUN git init -q -b codelab kotlin-fhir-data-capture \
+ && cd kotlin-fhir-data-capture \
+ && git remote add origin "$CODELAB_REPO" \
+ && git sparse-checkout set codelabs gradle \
+ && git fetch -q --depth 1 --filter=blob:none origin "$CODELAB_REF" \
+ && git reset -q --hard FETCH_HEAD \
+ && printf '.vscode/\n' >> .git/info/exclude \
+ && cp /opt/codelab/solutions/starter/App.kt codelabs/shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt \
+ && git -c user.name="Codelab lab" -c user.email="lab@localhost" \
+      commit -q -a -m "Add numbered import markers to App.kt"
+
+# Warm the Gradle cache. The finished codelab is built first so the library
+# from step 3 and everything it pulls in are already downloaded. The starter is
+# built last so the App tab shows it as soon as the lab starts.
+RUN cd "$CODELAB_DIR" \
+ && cp /opt/codelab/solutions/step-6/build.gradle.kts shared/build.gradle.kts \
+ && cp /opt/codelab/solutions/step-6/App.kt shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt \
+ && ./gradlew --no-daemon --console=plain -q :webApp:wasmJsBrowserDevelopmentExecutableDistribution \
+ && git checkout -q -- . \
+ && ./gradlew --no-daemon --console=plain -q :webApp:wasmJsBrowserDevelopmentExecutableDistribution \
+ && test -z "$(git status --porcelain)"
+
+# Kotlin colouring for the editor. It is a grammar only, with no language
+# server, so it costs no memory.
+RUN code-server --install-extension mathiasfrohlich.Kotlin
+
+COPY --chown=learner:learner ide/settings.json /home/learner/.local/share/code-server/User/settings.json
+COPY --chown=learner:learner ide/bashrc        /home/learner/.bashrc.codelab
+RUN echo '. ~/.bashrc.codelab' >> /home/learner/.bashrc
+
+# The guide extension opens the course manual beside the code. The JDK's jar
+# tool makes the VSIX package, which is a plain zip file. The package is kept
+# so the entry point can install it into a volume made by an older image.
+USER root
+COPY ide/codelab-guide /opt/codelab/guide-ext
+RUN jar --create --no-manifest --file /opt/codelab/codelab-guide.vsix -C /opt/codelab/guide-ext . \
+ && chmod 644 /opt/codelab/codelab-guide.vsix \
+ && mkdir -p /opt/codelab/guide
+USER learner
+RUN code-server --install-extension /opt/codelab/codelab-guide.vsix
+
+COPY --chmod=755 bin/ /usr/local/bin/
+
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/workspace-entrypoint"]

@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+#
+# Jumps the codelab to the end of a step, for anyone who falls behind.
+#
+#   step 3 | 4 | 5 | 6    put the two codelab files in the state they have at
+#                         the end of that step
+#   step reset            go back to the starter code
+#
+# The files it replaces are copied to ~/backups first.
+
+set -euo pipefail
+
+SOLUTIONS=/opt/codelab/solutions
+GRADLE_FILE="$CODELAB_DIR/shared/build.gradle.kts"
+APP_FILE="$CODELAB_DIR/shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt"
+
+usage() {
+    echo "Use one of these."
+    echo "  step 3        step 4        step 5        step 6        step reset"
+    exit 1
+}
+
+backup() {
+    local dir="$HOME/backups/$(date '+%Y%m%d-%H%M%S')"
+    mkdir -p "$dir"
+    cp "$GRADLE_FILE" "$APP_FILE" "$dir/"
+    echo "Your previous files are saved in $dir"
+}
+
+case "${1:-}" in
+    3|4|5|6)
+        backup
+        cp "$SOLUTIONS/step-$1/build.gradle.kts" "$GRADLE_FILE"
+        cp "$SOLUTIONS/step-$1/App.kt" "$APP_FILE"
+        echo "The code is now at the end of step $1. The app is rebuilding."
+        ;;
+    reset)
+        backup
+        git -C "$CODELAB_DIR" checkout -q -- shared/build.gradle.kts shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt
+        echo "The code is back to the starter. The app is rebuilding."
+        ;;
+    *)
+        usage
+        ;;
+esac

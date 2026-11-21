@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+#
+# Reads the output of a failed build and prints plain advice for the errors
+# this codelab most often produces. Android Studio would catch most of them
+# while typing. The editor in this lab does not, so the build log explains
+# them instead.
+#
+# It takes the file holding the build output as its only argument.
+
+set -uo pipefail
+
+LOG="${1:?give the build output file}"
+errors="$(grep -E '^e: ' "$LOG" || true)"
+[[ -n "$errors" ]] || exit 0
+
+hints=()
+hint() { hints+=("$1"); }
+has() { grep -qE "$1" <<<"$errors"; }
+
+# Prints the import a codelab name needs, or nothing for any other name.
+import_for() {
+    case "$1" in
+        Questionnaire)            echo "import dev.ohs.fhir.datacapture.Questionnaire" ;;
+        QuestionnaireConfig)      echo "import dev.ohs.fhir.datacapture.QuestionnaireConfig" ;;
+        launch)                   echo "import kotlinx.coroutines.launch" ;;
+        Json)                     echo "import kotlinx.serialization.json.Json" ;;
+        TemplateExtractionEngine) echo "import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine" ;;
+        FhirQuestionnaire)        echo "import dev.ohs.fhir.model.r4.Questionnaire as FhirQuestionnaire" ;;
+    esac
+}
+
+# Prints the numbered comment a codelab name's import belongs under.
+marker_for() {
+    case "$1" in
+        Questionnaire|QuestionnaireConfig|launch) echo "// 4 Imports for the Questionnaire composable" ;;
+        Json)                                     echo "// 5 Import for the JSON encoder" ;;
+        *)                                        echo "// 6 Imports for extracting FHIR resources" ;;
+    esac
+}
+
+if has "No parameter with name 'questionnaireJson'|No value passed for parameter 'status'"; then
+    hint "The file imports the wrong Questionnaire. Two things share that name. Delete the line
+     import dev.ohs.fhir.model.r4.Questionnaire
+   and add this line under the numbered comment  // 4 Imports for the Questionnaire composable
+     import dev.ohs.fhir.datacapture.Questionnaire"
+fi
+
+while read -r name; do
+    [[ -n "$name" ]] || continue
+    line="$(import_for "$name")"
+    if [[ -n "$line" ]]; then
+        hint "'$name' has no import. Add this line under the numbered comment  $(marker_for "$name")  near the top of App.kt
+     $line"
+    fi
+done < <(grep -oE "Unresolved reference '[A-Za-z]+'" <<<"$errors" | sed -E "s/.*'([A-Za-z]+)'/\1/" | sort -u)
+
+if has "Unresolved reference 'datacapture'"; then
+    hint "The library is not in the project yet. Finish step 3 in shared/build.gradle.kts and save it."
+fi
+if has "Unresolved reference 'Alignment'"; then
+    hint "The Hello World line is still there. Step 4 replaces it. Delete the line that starts with Text(text ="
+fi
+if has "Unresolved reference 'json'"; then
+    hint "Step 5.1 is missing. It creates the value named json that steps 5.2 and 6 use."
+fi
+if has "Unresolved reference 'submitQuestionnaire'|Unresolved reference 'scope'"; then
+    hint "Part of the starter code was deleted by accident. Run  step 3  to get a clean file, then redo step 4."
+fi
+if has "Conflicting import|ambiguity|Redeclaration"; then
+    hint "Two imports bring in the same name. The FHIR one must end with  as FhirQuestionnaire"
+fi
+if has "Expecting|Syntax error|Unexpected tokens|Missing '}'|Unclosed"; then
+    hint "A bracket, brace or quote is missing or extra near the line number in the first error. Compare that part with the step."
+fi
+
+echo
+if [[ "${#hints[@]}" -gt 0 ]]; then
+    printf '\033[1;33mWhat to do\033[0m\n'
+    i=1
+    for h in "${hints[@]}"; do
+        printf ' %d. %s\n' "$i" "$h"
+        i=$((i + 1))
+    done
+    echo
+fi
+printf 'To add missing imports for you, click  \033[1mFix imports\033[0m  in the bar at the bottom of the Editor.\n'
+printf 'To jump to a working version of a step, run  \033[1mstep 4\033[0m  with the number of the step.\n'
