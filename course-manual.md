@@ -59,23 +59,33 @@ paste. If you haven't built a Kotlin Multiplatform app before, you can start by
    ./lab-init.sh
    ```
 
-3. Wait about a minute. The command ends by printing two addresses and a password, like this.
+3. Wait about a minute. The command ends with a summary like the example below. The addresses and the password in the example are placeholders and do not work. Use the ones your own terminal prints.
 
    ```text
+   ------------------------------------------------------------------------
    The lab is ready. Open these in the browser on your own computer.
 
      Editor            https://203-0-113-10.sslip.io/ide/
-     Editor password   1a2b3c4d5e6f
+     Editor password   4827
      App               https://203-0-113-10.sslip.io/preview/
+
+   First steps
+     1. Open the Editor address and enter the password.
+     2. Click Open app at the very bottom of the Editor. The app opens in a
+        second tab.
+
+   Lost these details, or the tabs stopped loading? Run ./lab-init.sh again.
+   It is safe at any time and prints this summary again.
+   ------------------------------------------------------------------------
    ```
 
-Your addresses and password are your own. If you lose them, run `./lab-init.sh` again and it prints the same ones.
+**The addresses and password in this manual are examples only.** Wherever you see `203-0-113-10.sslip.io`, `203.0.113.10` or the password `4827`, use the values from your own summary instead. Your addresses and password are your own. You can get them back at any time, and the section **Find your addresses again** below explains how.
 
 ### Open the editor and the app
 
 You work in two browser tabs, one for the Editor and one for the App.
 
-1. Open the **Editor** address in a new tab. Paste the editor password and press **Submit**.
+1. Open the **Editor** address in a new tab. Type the editor password, which is a code of four digits, and press **Submit**. If the summary shows `none needed` instead of a password, the Editor opens without asking.
 2. In the bar at the very bottom of the Editor, click **Open app**. The app opens in a second tab. If your browser blocks the new tab, allow it, or open the **App** address yourself.
 
 If you have room, put the two tabs side by side in separate windows.
@@ -87,15 +97,16 @@ The Editor tab has six areas. The last three share the space under the code, and
 | Explorer | Far left | The project files |
 | Code | Top centre | The file you are changing |
 | Build log | Bottom centre | Shows each build and whether it worked |
-| Output | Bottom centre, the tab next to Build log | Shows what the app prints when you click **Submit**, which is how you see the JSON in steps 5 and 6 |
+| Output | Bottom centre, the tab next to Build log | Shows what the app prints when you click **Submit**. You read the JSON here in steps 5 and 6. |
 | Terminal | Bottom centre, the tab next to Output | For typing commands |
 | Guide | Right | This guide |
 
-You can drag the borders between the areas to resize them. The bar at the very bottom has five buttons.
+You can drag the borders between the areas to resize them. The bar at the very bottom has six buttons.
 
 | Button | What it does |
 |---|---|
 | **Open app** | Opens the App tab |
+| **Build now** | Saves every open file and builds the app straight away. You rarely need it, because saving a file starts a build automatically. |
 | **Guide** | Brings the Guide back if you closed it |
 | **Build log** | Brings the Build log back if you closed it |
 | **Output** | Brings the Output tab back if you closed it |
@@ -106,9 +117,77 @@ The App tab has a bar along the top and a strip along the bottom.
 | Control | What it does |
 |---|---|
 | Status dot | Green when the app matches your code, amber while a build runs, red when the last build failed |
-| **Auto refresh** | When ticked, the app reloads by itself after every successful build |
+| **Auto refresh** | When ticked, the app reloads automatically after every successful build |
 | **Refresh** | Reloads the app now |
 | **Output** | The strip along the bottom, which shows whatever the app prints. The Output tab in the Editor shows the same thing. |
+
+### Find your addresses again
+
+Come here when you return to the lab after a break, when the Editor or App tab stops loading, or when you have lost the addresses or the password.
+
+The lab VM stops when you close the course, when you stop it yourself, and when it sits idle for a while. Your code stays on it. The VM is set up to keep the same IP address, so the same addresses normally work again once it is running.
+
+1. Open the course in Heropa and start the VM if it is stopped. Give it a minute.
+2. Reload the Editor and App tabs. If they load, you are done.
+3. If they do not load, or you no longer have the addresses, open the terminal of the VM and run the same two commands as before.
+
+   ```bash
+   cd ~/sdc-codelab
+   ./lab-init.sh
+   ```
+
+4. Read the summary it prints. The lines under **Since the last run** tell you what to do.
+
+When the address is the same, the summary says so. Reload your tabs, or open the addresses again.
+
+```text
+Since the last run
+  Address    The same as before. Tabs you still have open work again after
+             a reload.
+  Password   The same as before.
+  Your code  Kept as you left it.
+```
+
+When the VM came back with a different IP address, the summary says `CHANGED` and shows the old address. The address in this example is a placeholder. Close the old Editor and App tabs, because they no longer work, and so do bookmarks to them. Open the new **Editor** address from the top of the summary, enter the password, and click **Open app**.
+
+```text
+Since the last run
+  Address    CHANGED. It was https://203-0-113-10.sslip.io
+             Close the old Editor and App tabs. They no longer work. Open
+             the two addresses above.
+  Password   The same as before.
+  Your code  Kept as you left it.
+```
+
+| What | After the VM restarts |
+|---|---|
+| Editor and App addresses | Normally the same. The summary says `CHANGED` when they are not. |
+| Editor password | Always the same |
+| Your code | Always kept as you left it |
+| Build log and Output | Start empty, and fill again at the next build and the next **Submit** |
+
+The command is safe to run at any time and as often as you like. It changes nothing when the address is the same. When the address changed it takes about a minute, because it gets a certificate for the new address.
+
+Always copy the addresses from the summary. They are made from the IP address of the VM, normally with dashes instead of dots and `.sslip.io` at the end, so an example IP of `203.0.113.10` would give `https://203-0-113-10.sslip.io/ide/`. Sometimes the summary shows the plain IP, such as `https://203.0.113.10/ide/`, with a note that says why. Those addresses work in exactly the same way.
+
+### If the lab starts in reduced mode
+
+The Editor needs a certificate that your browser trusts. The lab asks for one each time the address changes. Occasionally it cannot get one, usually because the service that issues them is over its limit. The lab then makes its own certificate and starts in **reduced mode**, and the summary from `./lab-init.sh` opens with the words `REDUCED MODE`. It also gives the reason, the pages to use, and when to try again.
+
+Your code, the build and the app all work in reduced mode. Two things are different.
+
+1. Your browser shows a warning page the first time you open the Editor address. Click **Advanced**, then **Proceed**. You do this once. The warning appears because the lab made its own certificate, and it is expected here.
+2. The Editor has no Guide, Build log or Output area, because browsers block them on a certificate they do not trust. A notice in the Editor says so. Use these in their place.
+
+| In full mode | In reduced mode |
+|---|---|
+| Guide area in the Editor | This manual in Heropa. The **Guide** button also opens it in the Editor as plain text. |
+| Build log area in the Editor | The **Build log** address that `./lab-init.sh` prints, in a separate browser tab. The **Build log** button opens it. |
+| Output area in the Editor | The **Output** strip along the bottom of the App tab |
+
+Everything else in this manual applies as written. Where a step says to look at the Build log or the Output tab, look at the page from the table.
+
+To get back to full mode, run `./lab-init.sh` again later. When it was refused for being over a limit, the summary gives the time to try again under **To get full mode**. That run asks for a certificate again and puts the lab back in full mode when it gets one. The addresses may change when that happens, so open the ones it prints.
 
 ### Download the Code
 
@@ -216,7 +295,7 @@ The picture in the block below shows the same app on an Android phone.
 
 ### Run the app on other platforms
 
-The lab runs the Web (Wasm) version of the app. You do not type any command. The lab runs the build for you every time you save a file, as the next part explains.
+The lab runs the Web (Wasm) version of the app. You do not type any command. The lab builds the app automatically every time you save a file, as the next part explains.
 
 > **Android Studio only:** Skip this on the lab.
 >
@@ -240,16 +319,35 @@ You do the same four things for every step of the codelab.
 1. Change a file in the Code area.
 2. Save it with Ctrl+S, or Cmd+S on a Mac. Saving starts a build.
 3. Watch the Build log under the code. It prints `Building the app` and then, after up to a minute, `BUILD OK`.
-4. Switch to the App tab. It has reloaded by itself and shows the new version.
+4. Switch to the App tab. It has reloaded automatically and shows the new version.
+
+**Builds are automatic.** The lab watches the project files. Every time you save one, it builds the app again and the App tab reloads. There is no Run button to press and no command to type. A change you have not saved is not built. A white dot on a file's tab marks unsaved changes, so while you see it the app does not have that change yet.
+
+If you save again while a build is running, the lab finishes that build and then runs one more, so your latest change is never missed.
+
+### Start a build yourself
+
+You rarely need to, but you can start a build without changing a file. Do this when you are not sure a build ran, when the Build log shows nothing new after a save, or when you want to see the result of the last build again.
+
+| Way | What to do |
+|---|---|
+| Button | Click **Build now** in the bar at the very bottom of the Editor. It saves every open file first, then builds. |
+| Command | Click the **Terminal** tab, type `build` and press Enter. This builds the files as they were last saved. |
+
+Either way, the build appears in the Build log like any other, and ends with `BUILD OK` or `BUILD FAILED`. When nothing changed since the last build, it finishes in a few seconds.
+
+### When a build fails
 
 If the Build log prints `BUILD FAILED`, look just above it for lines that start with `e`. Each one names the file, the line number and the problem. Under them, a **What to do** list explains the common ones in plain words. Fix the file and save again. The App tab keeps showing the last version that worked.
 
-If you have used Android Studio, this table shows what takes the place of each thing you know.
+### If you have used Android Studio
+
+This table shows what takes the place of each thing you know.
 
 | In Android Studio | On the lab |
 |---|---|
 | Open Android Studio | Use the Editor tab |
-| Click **Run** in the Android Studio toolbar | Save the file, wait for `BUILD OK`, look at the App tab |
+| Click **Run** in the Android Studio toolbar | Save the file, wait for `BUILD OK`, look at the App tab. **Build now** does the same without a change. |
 | Select **Sync Project with Gradle Files** | Save the file. Saving does the sync. |
 | Search Logcat | Read the **Output** tab in the Editor, next to the Build log |
 | Tap **Submit** | Click **Submit** |
@@ -486,7 +584,7 @@ onSubmit = { getQuestionnaireResponse ->
 },
 ```
 
-This piece of code has no numbered comment of its own. The line `onSubmit = {},` is inside the block you pasted in Step 1, four lines under the `// 4 Display the questionnaire` comment. Press Ctrl+F and type `onSubmit` to jump to it. Replace that one line with the five lines above. Leave the `onCancel = {},` line under it in place.
+This piece of code does not have its own numbered comment. The line `onSubmit = {},` is inside the block you pasted in Step 1, four lines under the `// 4 Display the questionnaire` comment. Press Ctrl+F and type `onSubmit` to jump to it. Replace that one line with the five lines above. Leave the `onCancel = {},` line under it in place.
 
 The new code uses `launch`, which is why you added the `kotlinx.coroutines.launch` import at the start of this step.
 
@@ -782,7 +880,8 @@ The other platforms need tools the lab does not have. To try them, follow the [p
 
 | Symptom | Fix |
 |---|---|
-| The App tab says the app is still building | Wait for `BUILD OK` in the Build log. The page reloads by itself. |
+| You saved a file and the Build log shows no new build | Check the file's tab for a white dot, which means it is not saved yet. Then click **Build now** at the very bottom of the Editor, or type `build` in the **Terminal** tab. |
+| The App tab says the app is still building | Wait for `BUILD OK` in the Build log. The page reloads automatically. |
 | The App tab did not change after a build | Check that **Auto refresh** is ticked, or click **Refresh**. If it still shows the old version, check that the Build log says `BUILD OK` and not `BUILD FAILED`. |
 | `Unresolved reference` in the Build log | An import is missing or misspelled. Click **Fix imports**, or compare your imports with the ones the step gives. |
 | `No parameter with name 'questionnaireJson' found` or `No value passed for parameter 'status'` | `App.kt` imports the wrong `Questionnaire`. Delete `import dev.ohs.fhir.model.r4.Questionnaire`, add `import dev.ohs.fhir.datacapture.Questionnaire`, or click **Fix imports**. |
@@ -797,4 +896,8 @@ The other platforms need tools the lab does not have. To try them, follow the [p
 | **Open app** does nothing | The browser blocked the new tab. Allow pop-ups for the lab address, or open the **App** address that `./lab-init.sh` printed. |
 | The code is in a state you cannot fix | Type `step reset` in the **Terminal** tab, or `step` with the number of the last step you finished. |
 | The Editor asks for the password again | Run `./lab-init.sh` in the Heropa terminal. It prints the same password. |
-| You came back and the tabs do not load | The VM was stopped while idle. Start it in Heropa and reload the tabs. |
+| You came back and the tabs do not load | The VM was stopped. Start it in Heropa, wait a minute and reload the tabs. If they still do not load, run `./lab-init.sh` in its terminal and read **Since the last run** in what it prints. When that says `CHANGED`, open the new addresses. See **Find your addresses again**. |
+| The Editor or App address stopped working | The same cause and the same fix as the row above. |
+| You lost the addresses or the password | Run `./lab-init.sh` in the Heropa terminal. It prints them again. |
+| The browser warns that the connection is not private | The lab is in reduced mode. Click **Advanced**, then **Proceed**. See **If the lab starts in reduced mode**. |
+| The Editor shows a notice about reduced mode, or has no Guide, Build log or Output area | The lab could not get a trusted certificate. Use the pages listed under **If the lab starts in reduced mode**, and run `./lab-init.sh` again later. |

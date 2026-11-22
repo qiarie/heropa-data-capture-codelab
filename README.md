@@ -24,7 +24,7 @@ Each learner gets one VM running two containers.
 | `/buildlog/` | A page that follows the build log. The editor embeds this page. |
 | `/output/` | A page that shows what the app printed. The editor embeds this page too. |
 
-The learner loop is short. They save a file and wait for `BUILD OK` in the build log under the code. The App tab then reloads by itself.
+The learner loop is short. They save a file and wait for `BUILD OK` in the build log under the code. The App tab then reloads automatically. Builds need no command, because a watcher in the workspace starts one after every save. A learner can also start one by hand with the **Build now** button or the `build` command.
 
 Learners work in two browser tabs, the Editor and the App. The editor opens in a fixed layout, so nobody has to arrange panes.
 
@@ -56,15 +56,16 @@ Building the web target needs no Android SDK. Gradle configures the Android modu
 | Download the code | Already in the workspace |
 | Import the app into Android Studio | Open the Editor tab |
 | Sync Project with Gradle Files | Save the file. The watcher runs Gradle. |
-| Click **Run** | Save the file and wait for `BUILD OK`. The App tab reloads by itself. |
+| Click **Run** | Save the file and wait for `BUILD OK`. The App tab reloads automatically. |
 | Search Logcat for `response:` | Read the Output tab in the editor, next to the build log |
 | Android Studio prompts you to add an import | Type or paste the import. The manual lists each one, and `fix-imports` adds them. |
 
-The editor colours Kotlin but has no code completion, no import prompts and no error underlining. Three things stand in for them.
+The editor colours Kotlin but has no code completion, no import prompts and no error underlining. Four things make up for them.
 
 | Stand-in | What it does |
 |---|---|
 | Build hints | After a failed build, the panel prints a **What to do** list that names the missing or wrong import in plain words. `workspace/bin/codelab-hints` holds the rules. |
+| `build` | Starts a build without a save. The build watcher runs it, so it shows in the build log like any other. A **Build now** button in the status bar saves every open file and then runs it. |
 | `fix-imports` | Adds the imports the code in `App.kt` needs and removes the wrong `Questionnaire` import. A **Fix imports** button in the status bar runs it. |
 | `step N` | Replaces both files with a working version of step N. |
 
@@ -103,7 +104,7 @@ A build peaked near 6 GB in a test container limited to 4 CPUs and 8 GB, before 
 2. Give it a title such as `Data Capture codelab`, pick the same region as the image and click **Create**.
 3. On the **Details** tab click **Add VM** and add the image from Step 1.
 4. Open the VM's row action menu and choose **Edit network**.
-   1. Tick **Allocate a permanent public IP address**. The lab address is made from this IP, so it must survive an idle stop.
+   1. Tick **Allocate a permanent public IP address**. The lab address is made from this IP. With the box ticked the VM keeps its IP across a stop, so a learner's addresses keep working. Without it every start gives a new IP and new addresses. The section **When a learner comes back** below explains both cases.
    2. Add inbound rules for TCP 80 and TCP 443 from `0.0.0.0/0`. Let's Encrypt checks over port 80 from addresses it does not publish, so that rule cannot be narrowed.
 
    Leave outbound traffic allowed. The first build needs it for the images, and step 3 of the codelab is served from the cache but anything a learner adds beyond the codelab is downloaded.
@@ -131,7 +132,7 @@ Launch an environment from the template and open the VM's terminal.
    ./lab-init.sh
    ```
 
-   It prints the Editor address, the editor password and the App address.
+   It prints the Editor address, the editor password and the App address. The password is a code of four digits, made once for each VM.
 
 3. Open the Editor and App addresses in your own browser and walk the learner manual from start to finish.
 
@@ -158,7 +159,65 @@ Launch an environment from the template and open the VM's terminal.
 | Limit Active time | On, 2 hours |
 | Idle action | Stop the VMs after 30 minutes idle |
 
-A stopped VM keeps its disk and its permanent public IP. Both containers restart with the VM, and the learner's code is still in the volume. Running `./lab-init.sh` again prints the same addresses and password.
+A stopped VM keeps its disk, so the learner's code is still in the volume, and both containers start again with the VM.
+
+### When a learner comes back
+
+What a returning learner has to do depends on the **Allocate a permanent public IP address** box from Step 2.
+
+| | Box ticked | Box not ticked |
+|---|---|---|
+| IP after a stop and start | The same | A new one |
+| Editor and App addresses | Keep working | Stop working, since they are made from the IP |
+| What the learner does | Starts the VM and reloads the tabs | Starts the VM, runs `./lab-init.sh` and opens the new addresses |
+| Certificate requests | One, at the first start | One at every start |
+
+Tick the box. It spares learners the extra step, and it keeps the lab away from the certificate limits described below.
+
+`./lab-init.sh` handles both cases, and a learner can run it at any time. It reads the IP again on every run and compares the address with the one from the last run. Its closing summary is written for the learner to act on. It always gives the two addresses and the password, and the lines under **Since the last run** say what changed.
+
+```text
+Since the last run
+  Address    CHANGED. It was https://203-0-113-10.sslip.io
+             Close the old Editor and App tabs. They no longer work. Open
+             the two addresses above.
+  Password   The same as before.
+  Your code  Kept as you left it.
+```
+
+| Line | What it can say |
+|---|---|
+| Address | The same as before, or `CHANGED` with the old address and what to do |
+| Password | Always the same. It is made once and kept in `.env`. |
+| Your code | Kept, or replaced with the starter after `--reset` |
+| Mode | Shown only when the lab moved from reduced mode back to full mode |
+
+A first run has no last run to compare with, so it prints **First steps** instead. A run where nothing changed makes no certificate request and takes a few seconds. A run after an IP change takes about a minute, and it recreates the workspace container so the editor learns the new address. The code is in the volume and is not touched.
+
+The manual covers all of this under **Find your addresses again**, with the same sample output.
+
+### Certificates and reduced mode
+
+Every new IP means a new certificate, so `./lab-init.sh` makes up to three tries and stops at the first that works.
+
+| Try | Certificate | Lab address | Mode |
+|---|---|---|---|
+| 1 | Let's Encrypt, for the sslip.io name | `https://203-0-113-10.sslip.io` | Full |
+| 2 | Let's Encrypt, for the bare IP | `https://203.0.113.10` | Full |
+| 3 | Self-signed | `https://203-0-113-10.sslip.io` | Reduced |
+
+Try 1 counts against a limit that every sslip.io name in the world shares. Let's Encrypt has raised it to 250,000, so a refusal is rare but possible. Try 2 is counted per IP, apart from that limit. Its certificates last six days, which is longer than a lab.
+
+In reduced mode the browser shows a warning page once, and the editor has no Guide, Build log or Output pane. Browsers refuse the editor's web views on an untrusted certificate, even after the warning is accepted. The Build log and Output buttons open browser pages instead, the guide opens as plain text, and a notice in the editor says why. The script ends with a message headed `REDUCED MODE` that names the cause and lists the pages to use. The manual covers this under **If the lab starts in reduced mode**.
+
+The script avoids needless requests.
+
+- A certificate that still fits the current address and has two days left is kept, and nothing is asked.
+- When Let's Encrypt refuses a request for being over a limit, the time it gives is saved in `certs/retry-after`. No request for that name or IP goes out before then. Delete the file to ask at once.
+- A lab in reduced mode asks again on every later run outside that wait, and goes back to full mode automatically.
+- The output of the last request is kept in `certs/certbot-name.log` and `certs/certbot-ip.log`.
+
+A failed request no longer leaves the lab down. To see reduced mode without waiting for a failure, start a test lab with `LAB_CERT=self-signed`. To test the requests without touching the real limits, set `LAB_ACME_SERVER` to the Let's Encrypt staging directory.
 
 ## Step 5 · Add the content
 
@@ -211,7 +270,7 @@ VS Code has no setting that opens files or pages when it starts, so a small exte
 | Output | A web view that frames `/output/` |
 | Terminal | An ordinary terminal, placed in a tab next to the output |
 
-The status bar has five buttons. **Open app** opens `/preview/` in a new browser tab. **Guide**, **Build log** and **Output** reopen an area that was closed. **Fix imports** runs the `fix-imports` helper. The layout comes back after a page reload.
+The status bar has six buttons. **Open app** opens `/preview/` in a new browser tab. **Build now** saves every open file and starts a build. **Guide**, **Build log** and **Output** reopen an area that was closed. **Fix imports** runs the `fix-imports` helper. The layout comes back after a page reload.
 
 The app runs in one browser tab and the Output tab sits in another, so the output has to travel between them. No server is involved. The preview page listens to the app's console and saves each printed line in the browser's local storage for the lab address. The `/output/` page reads that storage and is told by the browser when it changes. It then asks the editor to bring the Output tab to the front. This works because both pages come from the same address, and it means the two tabs must be open in the same browser.
 
@@ -219,11 +278,82 @@ To change the default sizes, edit `LAYOUT` near the top of `extension/extension.
 
 The preview page knows when to reload because the build watcher writes its state to a small file, served at `/app-status.json`. The page polls it every second and a half. It can show what the app prints because it frames the app from the same address, which lets it listen to the app's console.
 
-The app, the build log and the status file are served without a password. Only the editor asks for one. The build log holds compiler output and nothing secret.
+The app, the build log and the status file are served without a password. Only the editor asks for one, which is a code of four digits unless you set your own. The **Settings** section below covers the password and how to turn it off.
 
-The file is mounted into the workspace container, not copied into the image. After editing it on the VM, run `docker compose restart workspace` and reload the Editor tab.
+## Settings
 
-The same text can still be loaded as Heropa content. Learners then have it in both places.
+Every setting of a lab lives in `.env`, next to `lab-init.sh`. The script copies `.env.example` to `.env` on its first run, and the comments in that file describe each setting and its options, so `.env` documents itself.
+
+- To change a setting on one lab, edit `.env` and run `./lab-init.sh` again.
+- To change a default for every lab started from a template, edit `.env.example` before saving the template, because `--clean` removes `.env`.
+- To change a setting for one run only, put it in front of the command, as in `LAB_CERT=none LAB_HOST=localhost ./lab-init.sh`. The script writes `IDE_AUTH`, `LAB_CERT` and the two ports back to `.env`, so those stay for later runs. Any other setting given this way lasts for that run only.
+
+Every value goes inside double quotes.
+
+The addresses in this document and in the manual, such as `203-0-113-10.sslip.io` and `203.0.113.10`, are placeholders from an address range reserved for examples. The password `4827` in the manual is a placeholder too. The manual says so beside each sample, so learners do not try to open them.
+
+### Settings you may change
+
+| Setting | Options | Default | What it does |
+|---|---|---|---|
+| `IDE_AUTH` | `password` or `none` | `password` | Whether the editor asks for a password |
+| `IDE_PASSWORD` | Empty, or a password of your own | Empty | The code the editor asks for. Empty means the script makes a code of four digits and writes it here. |
+| `LAB_CERT` | `letsencrypt`, `self-signed` or `none` | `letsencrypt` | How the lab gets its certificate |
+| `LAB_HOST` | Empty, `localhost` or another name | Empty | The name the lab answers on. Empty means a name made from the public IP. |
+| `PUBLIC_IP` | Empty, or an IPv4 address | Empty | The public IP of the VM. Empty means it is read from the metadata service on every run. |
+| `LAB_HTTP_PORT` | A port number | `80` | The HTTP port nginx publishes |
+| `LAB_HTTPS_PORT` | A port number | `443` | The HTTPS port nginx publishes |
+| `CERTBOT_EMAIL` | Empty, or an email address | Empty | An address for the Let's Encrypt account |
+| `LAB_ACME_SERVER` | Empty, or a directory URL | Empty | The service asked for certificates. Empty means the real Let's Encrypt. |
+
+### The options of IDE_AUTH
+
+| Value | What the editor does | When to use it |
+|---|---|---|
+| `password` | Asks for the code in `IDE_PASSWORD` | On Heropa, and whenever you are unsure |
+| `none` | Opens with no password | On your own machine, or where the inbound rules in Heropa let in one trusted network and nothing else |
+
+With `none` the summary shows `none needed` instead of the password, and the manual tells learners what that means. The code stays in `.env`, so setting `IDE_AUTH` back to `password` brings the same one back.
+
+Leave it on `password` unless you have a reason. The editor includes a terminal, so without a password anyone who reaches the address has a shell on the VM. The address is not a secret. It is made from the public IP, which scanners probe all day, and every Let's Encrypt certificate is listed in public logs under the lab's exact name within minutes. `./lab-init.sh` prints a warning whenever `none` is used on an address other than `localhost`.
+
+### The options of IDE_PASSWORD
+
+| Value | Result |
+|---|---|
+| Empty | The script makes a code of four digits on its first run, from 1000 to 9999, and keeps it for the life of the VM |
+| A value of your own | Used as given. It may be any length. It must not hold a quote, a dollar sign, a backtick or a backslash. |
+
+Four digits are easy to type, and the editor allows only a few wrong tries an hour, so guessing one within the hours a lab lasts is unlikely. A lab that stays up for weeks should get a longer password. To change the password of a running lab, edit the value and run `./lab-init.sh`.
+
+### The options of LAB_CERT
+
+| Value | Certificate | Mode | When to use it |
+|---|---|---|---|
+| `letsencrypt` | From Let's Encrypt, trusted by browsers. Falls back to a self-signed one when it cannot get one. | Full, or reduced after a fallback | On Heropa |
+| `self-signed` | Made by the lab, not trusted by browsers | Reduced | To see what a learner gets after a fallback |
+| `none` | None. The lab serves plain HTTP. | Full | Only with `LAB_HOST` set to `localhost`, on your own machine |
+
+The section **Certificates and reduced mode** explains the tries and the fallback.
+
+### The options of LAB_HOST and PUBLIC_IP
+
+| `LAB_HOST` | `PUBLIC_IP` | Lab address |
+|---|---|---|
+| Empty | Empty | Made from the IP that the metadata service reports, as in `https://203-0-113-10.sslip.io`. This is the Heropa case. |
+| Empty | An IP | Made from that IP, for a machine with no metadata service |
+| `localhost` | Ignored | `http://localhost`, with `LAB_CERT` set to `none` |
+| Another name | Ignored | That name, which must already point at the machine |
+
+### Values the script writes
+
+Do not edit these, because the next run replaces them.
+
+| Setting | Values | What it holds |
+|---|---|---|
+| `LAB_URL` | An address | The address the Editor and App addresses are built on. It changes when the public IP changes. |
+| `LAB_MODE` | `full` or `reduced` | Whether browsers trust the certificate in use |
+| `LAB_NGINX_CONF` | `lab-https` or `lab-http` | Which nginx front is in use. `lab-http` goes with `LAB_CERT` set to `none`. |
 
 ## Updating the codelab version
 
@@ -246,14 +376,14 @@ docker build -t sdc-codelab-workspace:local workspace
 LAB_HOST=localhost LAB_CERT=none LAB_HTTP_PORT=8080 LAB_HTTPS_PORT=8443 ./lab-init.sh
 ```
 
-Browsers treat `http://localhost` as a secure page, so the editor works in full without a certificate. Do not use `LAB_CERT=self-signed` for this. The editor's web views, the guide pane among them, need a service worker, and browsers refuse to register one on a certificate they do not trust, even after you accept the warning. On Heropa the Let's Encrypt certificate is trusted, so this does not arise.
+Browsers treat `http://localhost` as a secure page, so the editor works in full without a certificate. `LAB_CERT=self-signed` gives reduced mode, not the full editor. The editor's web views, including the guide pane, need a service worker, and browsers refuse to register one on a certificate they do not trust, even after you accept the warning. On Heropa the Let's Encrypt certificate is trusted, so this does not arise.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| The guide pane shows `Could not register service worker` | The page is on a certificate the browser does not trust. On Heropa check that the lab got its Let's Encrypt certificate. On your own machine use `LAB_CERT=none`. |
-| `certbot failed` | Check the inbound rules for TCP 80 and 443, and that the VM has a public IP. |
+| The guide pane shows `Could not register service worker` | The page is on a certificate the browser does not trust, and the editor did not start in reduced mode. Run `./lab-init.sh` again so the mode and the certificate agree. On your own machine use `LAB_CERT=none`. |
+| The lab starts in `REDUCED MODE` | Read the reason in the message. For port 80, check the inbound rules for TCP 80 and 443 and that the VM has a public IP. For a limit, wait until the time given. The details are in `certs/certbot-name.log` and `certs/certbot-ip.log`. Then run `./lab-init.sh` again. |
 | The App tab stays on the waiting page | Read the build with `docker exec sdc-workspace build-log`. |
 | A build stops with `returns 127` | `libatomic1` is missing from the image. The Dockerfile installs it, so the image was changed. |
 | The editor asks for a password nobody has | Run `./lab-init.sh` again. It prints the password. |
