@@ -223,14 +223,13 @@ A failed request no longer leaves the lab down. To see reduced mode without wait
 
 `course-manual.md` is written for the Heropa lab and its web editor. The lab instructions are the main text. Anyone who wants to use Android Studio is sent to the published codelab on the website instead.
 
-It is built on the published codelab and keeps all of its text. The passages that only make sense in Android Studio, or on a learner's own computer, are kept but set apart.
+It is built on the published codelab. It keeps the codelab's explanations, steps and code, and leaves out the passages that only make sense in Android Studio or on a learner's own computer. Those were the list of tools, the download, the import into Android Studio, running on a device, the commands for other platforms, the Gradle sync, the three import prompts, the Run button and the two Logcat searches. The lab text covers each of those jobs in the way the web editor does it.
 
-| Kind of text | How to spot it |
-|---|---|
-| Lab instructions and the codelab's own explanations and code | Plain text |
-| A passage that applies only to Android Studio | A quoted block that starts with **Android Studio only.** and tells the learner to skip it |
+Three things from those passages are kept in another form.
 
-Thirteen blocks are marked that way. One is the example in the introduction. The other twelve are the list of tools, the download, the import into Android Studio, running on a device, the other platforms, the Gradle sync, the three import prompts, the Run button and the two Logcat searches.
+* A link to the published codelab in the introduction, for anyone who would rather work in Android Studio
+* The two pictures of the app on an Android phone, shown as plain pictures with a line that says what they are
+* One sentence saying the same code also runs on Android, iOS and Desktop, with the link
 
 The lab text adds three things the original leaves to Android Studio.
 
@@ -251,7 +250,7 @@ The manual maps onto Heropa content as one Section, with one Exercise for each s
 | 7 | Congratulations |
 | 8 | Troubleshooting |
 
-Load it as Custom content by pasting each exercise into the rich text editor, or publish it through GitBook and add it as External content. The three pictures load from GitHub at the pinned commit, so they need no upload.
+Load it as Custom content by pasting each exercise into the rich text editor, or publish it through GitBook and add it as External content. The two pictures load from GitHub at the pinned commit, so they need no upload.
 
 The text taken from the published codelab keeps its own punctuation and line breaks. Only the text written for the lab follows this repository's prose rule.
 
@@ -363,7 +362,7 @@ To move to a newer commit, do these in order.
 
 1. Change `CODELAB_REF` in `workspace/Dockerfile`.
 2. Update the solution files to match the new codelab text, including `workspace/solutions/starter/App.kt`, which is the published starter plus the three numbered import comments. The image build copies it over the checkout and commits it.
-3. Carry the changes in the new `codelabs/README.md` over to `course-manual.md`, keeping the lab text and the **Android Studio only** blocks. Update the commit in the three picture addresses and the two repository links.
+3. Carry the changes in the new `codelabs/README.md` over to `course-manual.md`, keeping the lab text and leaving out the passages that apply only to Android Studio. Update the commit in the two picture addresses and the repository links.
 4. Check the line numbers the manual quotes, and the names and imports in `fix-imports` and `codelab-hints`.
 5. Rebuild the image, walk the manual again and save a new template.
 
@@ -386,6 +385,6 @@ Browsers treat `http://localhost` as a secure page, so the editor works in full 
 | The lab starts in `REDUCED MODE` | Read the reason in the message. For port 80, check the inbound rules for TCP 80 and 443 and that the VM has a public IP. For a limit, wait until the time given. The details are in `certs/certbot-name.log` and `certs/certbot-ip.log`. Then run `./lab-init.sh` again. |
 | The App tab stays on the waiting page | Read the build with `docker exec sdc-workspace build-log`. |
 | A build stops with `returns 127` | `libatomic1` is missing from the image. The Dockerfile installs it, so the image was changed. |
-| The editor asks for a password nobody has | Run `./lab-init.sh` again. It prints the password. |
+| The editor asks for a password nobody has | Run `./lab-init.sh --info`. It prints the addresses and the password without restarting anything. |
 | A learner broke their code beyond repair | In the editor terminal run `step reset`, or on the VM run `./lab-init.sh --reset`. |
 | Builds are killed or the VM swaps | The VM has less than 16 GB. Use a larger instance type. |

@@ -2,13 +2,7 @@
 
 This guide takes you through the codelab on the Heropa lab, where you write the code in an editor in your browser and the app runs as a web page. You install nothing.
 
-It is built on the [published codelab](https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/), which was written for Android Studio on your own computer. The passages that only make sense in Android Studio sit in a marked block like below.
-
-> **Android Studio only:** Skip this on the lab.
->
-> A passage from the published codelab that does not apply to the web editor.
-
-Skip every block marked that way. If you would rather work in Android Studio, follow the [published codelab](https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/) instead of this guide.
+It is built on the [published codelab](https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/), which was written for Android Studio on your own computer. This guide covers the lab only. If you would rather work in Android Studio, follow the [published codelab](https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/) instead of this guide.
 
 The codelab text comes from the [Kotlin FHIR Data Capture](https://github.com/ohs-foundation/kotlin-fhir-data-capture) project under `codelabs` directory and is used under the Apache License 2.0.
 
@@ -32,14 +26,6 @@ responses. The same code runs on Android, iOS, Desktop (JVM) and Web (Wasm and J
 On the lab you need only a recent version of Chrome, Edge, Firefox or Safari. The app uses WebAssembly features that older browsers lack.
 
 You do not need to know Kotlin. Every change is given in full, and this guide says exactly which file to open and where to put each line.
-
-> **Android Studio only:** Skip this on the lab.
->
-> *   A recent version of [Android Studio](https://developer.android.com/studio)
-> *   [Android Emulator](https://developer.android.com/studio/run/emulator) or a physical Android device
-> *   Optional: a Mac with [Xcode](https://developer.apple.com/xcode/) to run the iOS app
-> *   The sample code
-> *   Basic knowledge of Kotlin and [Jetpack Compose](https://developer.android.com/compose)
 
 This codelab is focused on
 [Kotlin FHIR Data Capture](https://github.com/ohs-foundation/kotlin-fhir-data-capture).
@@ -74,8 +60,8 @@ paste. If you haven't built a Kotlin Multiplatform app before, you can start by
      2. Click Open app at the very bottom of the Editor. The app opens in a
         second tab.
 
-   Lost these details, or the tabs stopped loading? Run ./lab-init.sh again.
-   It is safe at any time and prints this summary again.
+   Lost these details? Run ./lab-init.sh --info to print them again.
+   The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
    ------------------------------------------------------------------------
    ```
 
@@ -193,29 +179,6 @@ To get back to full mode, run `./lab-init.sh` again later. When it was refused f
 
 There is nothing to download on the lab. The code is already there, and the Editor opens on the `codelabs` folder. The Explorer on the left shows what is inside it.
 
-> **Android Studio only:** Skip this on the lab.
->
-> To download the code for this codelab, you only need the `codelabs` folder of the Kotlin FHIR Data
-> Capture repo. You can fetch just that part of the repo with a
-> [sparse checkout](https://git-scm.com/docs/git-sparse-checkout) (Git 2.25 or later):
->
-> ```shell
-> git clone --depth 1 --filter=blob:none --sparse https://github.com/ohs-foundation/kotlin-fhir-data-capture.git
-> cd kotlin-fhir-data-capture
-> git sparse-checkout set codelabs gradle
-> ```
->
-> The `gradle` folder is needed too, because the codelab reads its library versions from
-> `gradle/libs.versions.toml` at the root of the repo.
->
-> Alternatively, you can clone the whole repo:
->
-> ```shell
-> git clone https://github.com/ohs-foundation/kotlin-fhir-data-capture.git
-> ```
->
-> The starter project for this codelab is located in `codelabs/`.
-
 ### Project structure
 
 | Module       | Contents                                                                                      |
@@ -257,15 +220,6 @@ This file is already open when the Editor starts. If you closed it, open `shared
 
 There is nothing to import on the lab. The Editor tab takes the place of Android Studio, and the project is already open in it.
 
-> **Android Studio only:** Skip this on the lab.
->
-> Let's start by importing the starter app into Android Studio.
->
-> Open Android Studio, select **Open** and choose the `codelabs` folder from the source code that you
-> have downloaded earlier.
->
-> ![Android Studio start screen](https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image1.png "Android Studio start screen")
-
 ### Run the starter app
 
 The starter app is already running on the lab as a web page. Look at the App tab, which shows a purple bar and the words **Hello World!**
@@ -273,44 +227,15 @@ The starter app is already running on the lab as a web page. Look at the App tab
 As you can see there isn't much here yet, so let's get right into displaying a questionnaire in
 your app!
 
-The picture in the block below shows the same app on an Android phone.
+The picture below shows the same app on an Android phone.
 
-> **Android Studio only:** Skip this on the lab.
->
-> Now that you have imported the project into Android Studio, you are ready to run the app for the
-> first time.
->
-> Connect your Android device via USB to your host, or
-> [start the Android Studio emulator](https://developer.android.com/studio/run/emulator). Select the
-> `androidApp` run configuration and click **Run** in the Android Studio toolbar. You can also
-> install the app from the command line:
->
-> ```shell
-> ./gradlew :androidApp:installDebug
-> ```
->
-> <p align="left">
-> <img src="https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image3.png" alt="Hello World app" width="500">
-> </p>
+![The Hello World app on an Android phone](https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image3.png)
 
 ### Run the app on other platforms
 
 The lab runs the Web (Wasm) version of the app. You do not type any command. The lab builds the app automatically every time you save a file, as the next part explains.
 
-> **Android Studio only:** Skip this on the lab.
->
-> Because the app is built with Kotlin Multiplatform, you can run it on other platforms too, at any
-> step of the codelab:
->
-> | Platform      | Command or action                                                                    |
-> |:--------------|:-------------------------------------------------------------------------------------|
-> | Desktop (JVM) | `./gradlew :desktopApp:run`                                                          |
-> | Web (Wasm)    | `./gradlew :webApp:wasmJsBrowserDevelopmentRun`                                      |
-> | Web (JS)      | `./gradlew :webApp:jsBrowserDevelopmentRun`                                          |
-> | iOS           | Open `iosApp/iosApp.xcodeproj` in Xcode, select a simulator, and click **Run**.      |
->
-> On iOS, Xcode builds the `shared` framework with Gradle. To run on a real device, see
-> [`iosApp/README.md`](https://github.com/ohs-foundation/kotlin-fhir-data-capture/blob/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/iosApp/README.md).
+The app is built with Kotlin Multiplatform, so the same code also runs on Android, iOS and Desktop. The [published codelab](https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/) shows how to run it on each of them.
 
 ### How to run the app
 
@@ -414,6 +339,19 @@ The Kotlin FHIR Data Capture dependency allows you to integrate the library in y
 following line below the `// 3 Add the dependency for Kotlin FHIR Data Capture` comment in the
 `commonMain` dependencies of the `shared/build.gradle.kts` file:
 
+Do this in the Editor tab.
+
+1. Open `shared/build.gradle.kts`. In the Explorer, click the `shared` folder, then the `build.gradle.kts` file inside it. The line of small text above the code must read `shared > build.gradle.kts`.
+2. Find the comment `// 3 Add the dependency for Kotlin FHIR Data Capture`. It is on line 46.
+3. Click at the end of that comment line and press Enter to make a new line under it.
+4. Paste this one line.
+
+   ```kotlin
+   implementation("dev.ohs.fhir:fhir-data-capture:2.0.0-alpha05")
+   ```
+
+5. Check your change against the block below, which shows the new line in its place. The `// ...` line stands for the lines that are already in the file. You do not paste this block.
+
 ```kotlin
 kotlin {
   sourceSets {
@@ -426,27 +364,6 @@ kotlin {
   }
 }
 ```
-
-Do this in the Editor tab.
-
-1. Open `shared/build.gradle.kts`. In the Explorer, click the `shared` folder, then the `build.gradle.kts` file inside it. The line of small text above the code must read `shared > build.gradle.kts`.
-2. Find the comment `// 3 Add the dependency for Kotlin FHIR Data Capture`. It is on line 46.
-3. Click at the end of that comment line and press Enter to make a new line under it.
-4. Paste this one line. The block above shows where it sits, and you do not paste the rest of that block.
-
-   ```kotlin
-   implementation("dev.ohs.fhir:fhir-data-capture:2.0.0-alpha05")
-   ```
-
-5. Check that the end of the `commonMain.dependencies` part now reads like this.
-
-   ```kotlin
-         implementation(libs.ohs.fhir.model)
-
-         // 3 Add the dependency for Kotlin FHIR Data Capture
-         implementation("dev.ohs.fhir:fhir-data-capture:2.0.0-alpha05")
-       }
-   ```
 
 Because the dependency is in `commonMain`, Gradle picks the right artifact for each target
 platform. The `androidApp`, `desktopApp` and `webApp` modules get the library through their
@@ -463,14 +380,6 @@ On the lab, saving the file does the job of the **Sync Project with Gradle Files
 2. Watch the Build log until it prints `BUILD OK`. This build takes two to three minutes, because the whole library is compiled into the app for the first time.
 
 The App tab looks the same after this step, because nothing uses the library yet.
-
-> **Android Studio only:** Skip this on the lab.
->
-> To be sure that all dependencies are available to your app, you should sync your project with
-> Gradle files at this point.
->
-> Select **Sync Project with Gradle Files** from the Android Studio toolbar. You can also run the app
-> again to check the dependencies are working correctly.
 
 ## 4. Display a Questionnaire
 
@@ -506,14 +415,6 @@ The `// 4 Imports` comment is not in the published codelab. The lab adds it to t
 
 Copy the lines exactly. The first import is the form, and it must come from `datacapture`. A different class, `dev.ohs.fhir.model.r4.Questionnaire`, has the same short name and breaks this step.
 
-> **Android Studio only:** Skip this on the lab.
->
-> Along the way, Android Studio will prompt you to add the necessary imports:
->
-> *   `dev.ohs.fhir.datacapture.Questionnaire`
-> *   `dev.ohs.fhir.datacapture.QuestionnaireConfig`
-> *   `kotlinx.coroutines.launch`
-
 ### Step 1: Add the Questionnaire composable
 
 The `Questionnaire` composable requires a JSON encoded FHIR Questionnaire for it to render.
@@ -521,6 +422,12 @@ The `Questionnaire` composable requires a JSON encoded FHIR Questionnaire for it
 You can look at the `questionnaire.json` file if you want, but one of the benefits of Kotlin FHIR
 Data Capture is that you don't need to know the structure of the FHIR Questionnaire (or anything
 about FHIR) to get it to render it! You'll look more closely at this file later in the codelab.
+
+The three steps below make this change. These notes tell you where each thing they name is.
+
+- The comment `// 4 Replace with code from the codelab to display the questionnaire.` is inside `App()`, near line 83 now that the imports are in. Press Ctrl+F and type `// 4 Replace` to jump to it. Just under it is the line that starts with `Text(text = "Hello World!"`.
+- Select both of those lines, delete them and paste the block from step 3 where they were. The new block starts with its own numbered comment, `// 4 Display the questionnaire`.
+- The `androidx.compose.ui.Alignment` import is in the import group near the top of the file, on the line `import androidx.compose.ui.Alignment`. Deleting it is optional. An unused import does no harm.
 
 1.  Find the `// 4 Replace with code from the codelab to display the questionnaire.` comment in
     `App()`.
@@ -540,30 +447,17 @@ about FHIR) to get it to render it! You'll look more closely at this file later 
     }
     ```
 
-The comment `// 4 Replace with code from the codelab to display the questionnaire.` is inside `App()`, near line 83 now that the imports are in. Press Ctrl+F and type `// 4 Replace` to jump to it. Just under it is the line that starts with `Text(text = "Hello World!"`.
-
-Select both of those lines, delete them and paste the block above where they were. The new block starts with its own numbered comment, `// 4 Display the questionnaire`.
-
-The `androidx.compose.ui.Alignment` import is in the import group near the top of the file, on the line `import androidx.compose.ui.Alignment`. Deleting it is optional. An unused import does no harm.
-
 The questionnaire is shown as soon as `questionnaireJson` has been read. `QuestionnaireConfig` lets
 you customize how the questionnaire is displayed. Here it hides the **Cancel** button, so only the
 **Submit** button is shown, and `onCancel` can be left empty.
 
 Now run it. Save `App.kt` with Ctrl+S, wait for `BUILD OK` in the Build log, then look at the App tab. It shows the questionnaire as a form.
 
-The picture in the block below shows the same form on an Android phone.
+The picture below shows the same form on an Android phone.
+
+![The questionnaire shown as a form on an Android phone](https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image2.png)
 
 If the Build log prints `BUILD FAILED`, read the **What to do** list under the errors, or click **Fix imports** at the bottom of the Editor.
-
-> **Android Studio only:** Skip this on the lab.
->
-> Let's run the codelab by clicking **Run** in the Android Studio toolbar. You should see something
-> similar to this:
->
-> <p align="left">
-> <img src="https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image2.png" alt="Questionnaire Rendered in Emulator" width="500">
-> </p>
 
 Navigate through the questionnaire and try entering some answers. There are a few different answer
 widgets used, including text fields and a date picker, which were automatically rendered based on
@@ -576,15 +470,16 @@ the underlying type in the original FHIR questionnaire.
 At the moment nothing happens when you tap **Submit**. The library calls `onSubmit` when the
 button is tapped, so replace `onSubmit = {},` with the following code:
 
-```kotlin
-onSubmit = { getQuestionnaireResponse ->
-  // getQuestionnaireResponse() validates the answers first. If validation fails, the
-  // library shows an error dialog and cancels this coroutine.
-  scope.launch { submitQuestionnaire(questionnaireJson, getQuestionnaireResponse()) }
-},
-```
+1. Find the line `onSubmit = {},`. It is inside the block you pasted in Step 1, four lines under the `// 4 Display the questionnaire` comment. Press Ctrl+F and type `onSubmit` to jump to it. This piece of code does not have its own numbered comment.
+2. Replace that one line with these five lines. Leave the `onCancel = {},` line under it in place.
 
-This piece of code does not have its own numbered comment. The line `onSubmit = {},` is inside the block you pasted in Step 1, four lines under the `// 4 Display the questionnaire` comment. Press Ctrl+F and type `onSubmit` to jump to it. Replace that one line with the five lines above. Leave the `onCancel = {},` line under it in place.
+   ```kotlin
+   onSubmit = { getQuestionnaireResponse ->
+     // getQuestionnaireResponse() validates the answers first. If validation fails, the
+     // library shows an error dialog and cancels this coroutine.
+     scope.launch { submitQuestionnaire(questionnaireJson, getQuestionnaireResponse()) }
+   },
+   ```
 
 The new code uses `launch`, which is why you added the `kotlinx.coroutines.launch` import at the start of this step.
 
@@ -670,28 +565,21 @@ import kotlinx.serialization.json.Json
 
 The `// 5 Import` comment is not in the published codelab. The lab adds it to the starter code to mark the place.
 
-> **Android Studio only:** Skip this on the lab.
->
-> Along the way, Android Studio will prompt you to add the necessary import:
->
-> *   `kotlinx.serialization.json.Json`
-
 ### Step 1: Configure the JSON encoder
 
 Find the `// 5.1 Replace with code from the codelab to configure the JSON encoder.` comment above
 `App()` and replace it with the following code:
 
-```kotlin
-// 5.1 Configure the JSON encoder
-private val json = Json {
-  explicitNulls = false
-  encodeDefaults = false
-}
-```
+1. Find the comment `// 5.1 Replace with code from the codelab to configure the JSON encoder.` in `App.kt`. It is a little under the import group and just above the line `@Composable` that comes before `fun App() {`. Press Ctrl+F and type `// 5.1` to jump to it.
+2. Select that one comment line and paste this block over it.
 
-The comment `// 5.1 Replace with code from the codelab to configure the JSON encoder.` is in `App.kt`, a little under the import group and just above the line `@Composable` that comes before `fun App() {`. Press Ctrl+F and type `// 5.1` to jump to it.
-
-Select that one comment line and paste the block above over it.
+   ```kotlin
+   // 5.1 Configure the JSON encoder
+   private val json = Json {
+     explicitNulls = false
+     encodeDefaults = false
+   }
+   ```
 
 The Kotlin FHIR model classes are `kotlinx.serialization` classes, so a `Json` instance can encode
 them to JSON and decode them back. `explicitNulls = false` and `encodeDefaults = false` leave out
@@ -703,12 +591,13 @@ Find the `submitQuestionnaire()` method and replace the
 `// 5.2 Replace with code from the codelab to print the questionnaire response.` comment with the
 following code:
 
-```kotlin
-// 5.2 Print the questionnaire response
-println("response: ${json.encodeToString(questionnaireResponse)}")
-```
+1. Go to `submitQuestionnaire()`. It is the last part of `App.kt`, at the very bottom of the file. Press Ctrl+F and type `// 5.2` to jump to the comment.
+2. Select that one comment line and paste these two lines over it.
 
-`submitQuestionnaire()` is the last part of `App.kt`, at the very bottom of the file. Press Ctrl+F and type `// 5.2` to jump to the comment. Select that one comment line and paste the two lines above over it.
+   ```kotlin
+   // 5.2 Print the questionnaire response
+   println("response: ${json.encodeToString(questionnaireResponse)}")
+   ```
 
 Leave the `// 6 Replace with code from the codelab` comment under it in place. You replace that one in step 6.
 
@@ -729,11 +618,6 @@ The same output also shows in a strip at the bottom of the App tab.
 The same text also goes to the browser console, which opens with F12, if you prefer to read it there.
 
 If you would rather jump to a working version, type `step 5` in the **Terminal** tab.
-
-> **Android Studio only:** Skip this on the lab.
->
-> Run the app, answer the questions and tap **Submit**. Search Logcat for `response:` to see the
-> QuestionnaireResponse.
 
 ## 6. Extract FHIR Resources from a QuestionnaireResponse
 
@@ -782,31 +666,19 @@ The `// 6 Imports` comment is not in the published codelab. The lab adds it to t
 
 Copy the last line in full, with its `as FhirQuestionnaire` ending. Without that ending the build fails, because the name `Questionnaire` would then mean two different things.
 
-> **Android Studio only:** Skip this on the lab.
->
-> Along the way, Android Studio will prompt you to add the necessary import:
->
-> *   `dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine`
->
-> You'll also need the Kotlin FHIR `Questionnaire` model class. It has the same name as the
-> `Questionnaire` composable from step 4, so add it by hand with an alias:
->
-> ```kotlin
-> import dev.ohs.fhir.model.r4.Questionnaire as FhirQuestionnaire
-> ```
-
 Find the `submitQuestionnaire()` method and replace the
 `// 6 Replace with code from the codelab to extract FHIR resources from the questionnaire response.`
 comment with the following code:
 
-```kotlin
-// 6 Extract FHIR resources from the questionnaire response
-val questionnaire = json.decodeFromString<FhirQuestionnaire>(questionnaireJson)
-val bundle = TemplateExtractionEngine.extract(questionnaire, questionnaireResponse)
-println("extraction result: ${json.encodeToString(bundle)}")
-```
+1. Go to `submitQuestionnaire()`, at the very bottom of `App.kt`. Press Ctrl+F and type `// 6 Replace` to jump to the comment. It sits under the `// 5.2 Print the questionnaire response` lines you added in step 5.
+2. Select that one comment line and paste these four lines over it.
 
-`submitQuestionnaire()` is at the very bottom of `App.kt`. Press Ctrl+F and type `// 6 Replace` to jump to the comment. It sits under the `// 5.2 Print the questionnaire response` lines you added in step 5. Select that one comment line and paste the four lines above over it.
+   ```kotlin
+   // 6 Extract FHIR resources from the questionnaire response
+   val questionnaire = json.decodeFromString<FhirQuestionnaire>(questionnaireJson)
+   val bundle = TemplateExtractionEngine.extract(questionnaire, questionnaireResponse)
+   println("extraction result: ${json.encodeToString(bundle)}")
+   ```
 
 `TemplateExtractionEngine.extract()` requires a Kotlin FHIR Questionnaire, which you can create by
 decoding the questionnaire JSON string from earlier, and a QuestionnaireResponse, which we already
@@ -840,11 +712,6 @@ Now run it.
 It is a FHIR Bundle of type `transaction` holding one Patient, with the names you typed.
 
 If you would rather jump to the finished code, type `step 6` in the **Terminal** tab.
-
-> **Android Studio only:** Skip this on the lab.
->
-> Run the app, submit the questionnaire and search Logcat for `extraction result:` to see the
-> Bundle.
 
 ## 7. Congratulations!
 
@@ -895,9 +762,9 @@ The other platforms need tools the lab does not have. To try them, follow the [p
 | The Guide, Build log or Output area is gone | Click its name in the bar at the very bottom of the Editor. |
 | **Open app** does nothing | The browser blocked the new tab. Allow pop-ups for the lab address, or open the **App** address that `./lab-init.sh` printed. |
 | The code is in a state you cannot fix | Type `step reset` in the **Terminal** tab, or `step` with the number of the last step you finished. |
-| The Editor asks for the password again | Run `./lab-init.sh` in the Heropa terminal. It prints the same password. |
+| The Editor asks for the password again | Run `./lab-init.sh --info` in the Heropa terminal. It prints the same password without restarting anything. |
 | You came back and the tabs do not load | The VM was stopped. Start it in Heropa, wait a minute and reload the tabs. If they still do not load, run `./lab-init.sh` in its terminal and read **Since the last run** in what it prints. When that says `CHANGED`, open the new addresses. See **Find your addresses again**. |
 | The Editor or App address stopped working | The same cause and the same fix as the row above. |
-| You lost the addresses or the password | Run `./lab-init.sh` in the Heropa terminal. It prints them again. |
+| You lost the addresses or the password | Run `./lab-init.sh --info` in the Heropa terminal. It prints them again. |
 | The browser warns that the connection is not private | The lab is in reduced mode. Click **Advanced**, then **Proceed**. See **If the lab starts in reduced mode**. |
 | The Editor shows a notice about reduced mode, or has no Guide, Build log or Output area | The lab could not get a trusted certificate. Use the pages listed under **If the lab starts in reduced mode**, and run `./lab-init.sh` again later. |
