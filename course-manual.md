@@ -90,7 +90,7 @@ The Editor tab has six areas. The last three share the space under the code, and
 | Build log | Bottom centre | Shows each build and whether it worked |
 | Output | Bottom centre, the tab next to Build log | Shows what the app prints when you click **Submit**. You read the JSON here in steps 5 and 6. |
 | Terminal | Bottom centre, the tab next to Output | For typing commands |
-| Guide | Right | This guide |
+| Guide | Right | This guide, one step at a time. **Back** and **Next** move between the steps, the list between them jumps to any step, and **Show all** puts the whole guide on one page. |
 
 You can drag the borders between the areas to resize them. The bar at the very bottom has six buttons.
 

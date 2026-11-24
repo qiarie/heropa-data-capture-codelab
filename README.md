@@ -268,10 +268,12 @@ VS Code has no setting that opens files or pages when it starts, so a small exte
 
 | Area | How it is made |
 |---|---|
-| Guide | The Markdown preview that ships with the editor, opened on `course-manual.md` |
+| Guide | The Markdown preview that ships with the editor, opened on `course-manual.md`. The extension adds a Copy button to each code block and shows one step at a time. |
 | Build log | A web view that frames `/buildlog/` |
 | Output | A web view that frames `/output/` |
 | Terminal | An ordinary terminal, placed in a tab next to the output |
+
+The Guide treats each second level heading of the manual as one step. A bar at the top has **Back**, **Next**, a list of the steps and a **Show all** switch, and the same two buttons sit under the text. The step on screen is remembered in the learner's browser. `preview/steps.js` in the extension does this by hiding the other steps, so the manual file needs no markup for it. A new second level heading in the manual becomes a new step on its own. Searching the Guide finds text in the step on screen only, unless **Show all** is on.
 
 The status bar has six buttons. **Open app** opens `/preview/` in a new browser tab. **Build now** saves every open file and starts a build. **Guide**, **Build log** and **Output** reopen an area that was closed. **Fix imports** runs the `fix-imports` helper. The layout comes back after a page reload.
 
