@@ -35,7 +35,7 @@
   </header>
   <div id="lines"></div>
 <script>
-  // Shows what the app printed. The App tab saves each printed line in the
+  // Shows what the app printed. The App preview tab saves each printed line in the
   // browser's storage for this lab address, and this page reads it from
   // there. Both pages come from the same address, so they share that storage
   // without any server in between.
@@ -70,7 +70,7 @@
     if (entries.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'empty';
-      empty.textContent = 'Nothing printed yet. Fill in the form on the App tab and click Submit. Output appears here from step 5 onwards.';
+      empty.textContent = 'Nothing printed yet. Fill in the form on the App preview tab and click Submit. Output appears here from step 5 onwards.';
       lines.append(empty);
       summary.textContent = 'What the app prints when you click Submit';
       return;

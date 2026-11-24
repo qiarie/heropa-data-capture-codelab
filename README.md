@@ -19,14 +19,14 @@ Each learner gets one VM running two containers.
 |---|---|
 | `/` | A start page with links to the two below |
 | `/ide/` | The editor. It shows the code, the build log and the manual side by side. |
-| `/preview/` | The app the learner is building, with a status bar, a refresh button and an output strip around it. This is the learner's App tab. |
+| `/preview/` | The app the learner is building, with a status bar, a refresh button and an output strip around it. This is the learner's App preview tab. |
 | `/app/` | The app with nothing around it |
 | `/buildlog/` | A page that follows the build log. The editor embeds this page. |
 | `/output/` | A page that shows what the app printed. The editor embeds this page too. |
 
-The learner loop is short. They save a file and wait for `BUILD OK` in the build log under the code. The App tab then reloads automatically. Builds need no command, because a watcher in the workspace starts one after every save. A learner can also start one by hand with the **Build now** button or the `build` command.
+The learner loop is short. They save a file and wait for `BUILD OK` in the build log under the code. The App preview tab then reloads automatically. Builds need no command, because a watcher in the workspace starts one after every save. A learner can also start one by hand with the **Build now** button or the `build` command.
 
-Learners work in two browser tabs, the Editor and the App. The editor opens in a fixed layout, so nobody has to arrange panes.
+Learners work in two browser tabs, the Editor and the App preview. The editor opens in a fixed layout, so nobody has to arrange panes.
 
 | Area | Where | What it shows |
 |---|---|---|
@@ -36,7 +36,7 @@ Learners work in two browser tabs, the Editor and the App. The editor opens in a
 | Terminal | A tab next to the output | An ordinary shell |
 | Guide | Right, at full height | `course-manual.md`, rendered |
 
-An earlier version also showed the app in a fourth pane. It left too little room for each pane, so the app now opens in its own tab from the **Open app** button in the status bar.
+An earlier version also showed the app in a fourth pane. It left too little room for each pane, so the app now opens in its own tab from the **Open app preview** button in the status bar.
 
 ### Why the web target
 
@@ -56,7 +56,7 @@ Building the web target needs no Android SDK. Gradle configures the Android modu
 | Download the code | Already in the workspace |
 | Import the app into Android Studio | Open the Editor tab |
 | Sync Project with Gradle Files | Save the file. The watcher runs Gradle. |
-| Click **Run** | Save the file and wait for `BUILD OK`. The App tab reloads automatically. |
+| Click **Run** | Save the file and wait for `BUILD OK`. The App preview tab reloads automatically. |
 | Search Logcat for `response:` | Read the Output tab in the editor, next to the build log |
 | Android Studio prompts you to add an import | Type or paste the import. The manual lists each one, and `fix-imports` adds them. |
 
@@ -69,7 +69,7 @@ The editor colours Kotlin but has no code completion, no import prompts and no e
 | `fix-imports` | Adds the imports the code in `App.kt` needs and removes the wrong `Questionnaire` import. A **Fix imports** button in the status bar runs it. |
 | `step N` | Replaces both files with a working version of step N. |
 
-The image build also adds one build setting, `kotlin.incremental.wasm=true`, to `codelabs/gradle.properties`, in the same commit as the numbered import comments. A build after a small edit then rebuilds only what the edit changed. Kotlin 2.3.21 marks the setting as experimental. If a build ever leaves a stale app in the App tab, remove that line from the image build in `workspace/Dockerfile` and build the image again.
+The image build also adds one build setting, `kotlin.incremental.wasm=true`, to `codelabs/gradle.properties`, in the same commit as the numbered import comments. A build after a small edit then rebuilds only what the edit changed. Kotlin 2.3.21 marks the setting as experimental. If a build ever leaves a stale app in the App preview tab, remove that line from the image build in `workspace/Dockerfile` and build the image again.
 
 The most common mistake is importing `dev.ohs.fhir.model.r4.Questionnaire` in step 4. The form and the FHIR model class share that name, and Android Studio would have offered the choice. The manual has an exercise on this, named "What this editor does not do for you".
 
@@ -134,9 +134,9 @@ Launch an environment from the template and open the VM's terminal.
    ./lab-init.sh
    ```
 
-   It prints the Editor address, the editor password and the App address. The password is a code of four digits, made once for each VM.
+   It prints the Editor address, the editor password and the App preview address. The password is a code of four digits, made once for each VM.
 
-3. Open the Editor and App addresses in your own browser and walk the learner manual from start to finish.
+3. Open the Editor and App preview addresses in your own browser and walk the learner manual from start to finish.
 
 4. Remove everything that belongs to this one VM, keeping the images.
 
@@ -151,7 +151,7 @@ Launch an environment from the template and open the VM's terminal.
 
 ### What the learner's first run costs
 
-`./lab-init.sh` on a fresh VM takes about a minute. Most of it is the certificate request and Docker copying the checkout and the Gradle cache into the learner's volume. The App tab then shows the starter app as soon as the first build finishes, which is quick because the image already built it.
+`./lab-init.sh` on a fresh VM takes about a minute. Most of it is the certificate request and Docker copying the checkout and the Gradle cache into the learner's volume. The App preview tab then shows the starter app as soon as the first build finishes, which is quick because the image already built it.
 
 ## Step 4 · Create the policy
 
@@ -170,7 +170,7 @@ What a returning learner has to do depends on the **Allocate a permanent public 
 | | Box ticked | Box not ticked |
 |---|---|---|
 | IP after a stop and start | The same | A new one |
-| Editor and App addresses | Keep working | Stop working, since they are made from the IP |
+| Editor and App preview addresses | Keep working | Stop working, since they are made from the IP |
 | What the learner does | Starts the VM and reloads the tabs | Starts the VM, runs `./lab-init.sh` and opens the new addresses |
 | Certificate requests | One, at the first start | One at every start |
 
@@ -181,8 +181,8 @@ Tick the box. It spares learners the extra step, and it keeps the lab away from 
 ```text
 Since the last run
   Address    CHANGED. It was https://203-0-113-10.sslip.io
-             Close the old Editor and App tabs. They no longer work. Open
-             the two addresses above.
+             Close the old Editor and App preview tabs. They no longer work.
+             Open the two addresses above.
   Password   The same as before.
   Your code  Kept as you left it.
 ```
@@ -275,7 +275,7 @@ VS Code has no setting that opens files or pages when it starts, so a small exte
 
 The Guide treats each second level heading of the manual as one step. A bar at the top has **Back**, **Next**, a list of the steps and a **Show all** switch, and the same two buttons sit under the text. The step on screen is remembered in the learner's browser. `preview/steps.js` in the extension does this by hiding the other steps, so the manual file needs no markup for it. A new second level heading in the manual becomes a new step on its own. Searching the Guide finds text in the step on screen only, unless **Show all** is on.
 
-The status bar has six buttons. **Open app** opens `/preview/` in a new browser tab. **Build now** saves every open file and starts a build. **Guide**, **Build log** and **Output** reopen an area that was closed. **Fix imports** runs the `fix-imports` helper. The layout comes back after a page reload.
+The status bar has six buttons. **Open app preview** opens `/preview/` in a new browser tab. **Build now** saves every open file and starts a build. **Guide**, **Build log** and **Output** reopen an area that was closed. **Fix imports** runs the `fix-imports` helper. The layout comes back after a page reload.
 
 The app runs in one browser tab and the Output tab sits in another, so the output has to travel between them. No server is involved. The preview page listens to the app's console and saves each printed line in the browser's local storage for the lab address. The `/output/` page reads that storage and is told by the browser when it changes. It then asks the editor to bring the Output tab to the front. This works because both pages come from the same address, and it means the two tabs must be open in the same browser.
 
@@ -310,7 +310,7 @@ The addresses in this document and in the manual, such as `203-0-113-10.sslip.io
 | `LAB_HTTPS_PORT` | A port number | `443` | The HTTPS port nginx publishes |
 | `CERTBOT_EMAIL` | Empty, or an email address | Empty | An address for the Let's Encrypt account |
 | `LAB_ACME_SERVER` | Empty, or a directory URL | Empty | The service asked for certificates. Empty means the real Let's Encrypt. |
-| `LAB_QR` | `on` or `off` | `on` | Whether the summary prints a QR code for the App |
+| `LAB_QR` | `on` or `off` | `on` | Whether the summary prints a QR code for the App preview |
 
 ### The options of IDE_AUTH
 
@@ -353,7 +353,7 @@ The section **Certificates and reduced mode** explains the tries and the fallbac
 
 ### The QR code and the options of LAB_QR
 
-`./lab-init.sh` and `./lab-init.sh --info` print one QR code under the addresses, under the line `Scan the QR code to preview the app on your phone`. The start page of the lab shows the same code. A learner scans it with a phone or tablet to open the App there without typing the address. The Editor has no code, because the codelab needs a keyboard and a wide screen.
+`./lab-init.sh` and `./lab-init.sh --info` print one QR code under the addresses, under the line `Scan the QR code to preview the app on your phone`. The start page of the lab shows the same code. A learner scans it with a phone or tablet to open the App preview there without typing the address. The Editor has no code, because the codelab needs a keyboard and a wide screen.
 
 | Value | What the summary shows | When to use it |
 |---|---|---|
@@ -371,7 +371,7 @@ Do not edit these, because the next run replaces them.
 
 | Setting | Values | What it holds |
 |---|---|---|
-| `LAB_URL` | An address | The address the Editor and App addresses are built on. It changes when the public IP changes. |
+| `LAB_URL` | An address | The address the Editor and App preview addresses are built on. It changes when the public IP changes. |
 | `LAB_MODE` | `full` or `reduced` | Whether browsers trust the certificate in use |
 | `LAB_NGINX_CONF` | `lab-https` or `lab-http` | Which nginx front is in use. `lab-http` goes with `LAB_CERT` set to `none`. |
 
@@ -404,7 +404,7 @@ Browsers treat `http://localhost` as a secure page, so the editor works in full 
 |---|---|
 | The guide pane shows `Could not register service worker` | The page is on a certificate the browser does not trust, and the editor did not start in reduced mode. Run `./lab-init.sh` again so the mode and the certificate agree. On your own machine use `LAB_CERT=none`. |
 | The lab starts in `REDUCED MODE` | Read the reason in the message. For port 80, check the inbound rules for TCP 80 and 443 and that the VM has a public IP. For a limit, wait until the time given. The details are in `certs/certbot-name.log` and `certs/certbot-ip.log`. Then run `./lab-init.sh` again. |
-| The App tab stays on the waiting page | Read the build with `docker exec sdc-workspace build-log`. |
+| The App preview tab stays on the waiting page | Read the build with `docker exec sdc-workspace build-log`. |
 | A build stops with `returns 127` | `libatomic1` is missing from the image. The Dockerfile installs it, so the image was changed. |
 | The editor asks for a password nobody has | Run `./lab-init.sh --info`. It prints the addresses and the password without restarting anything. |
 | A learner broke their code beyond repair | In the editor terminal run `step reset`, or on the VM run `./lab-init.sh --reset`. |

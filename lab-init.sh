@@ -51,8 +51,9 @@
 #   IDE_AUTH         password or none. none makes the editor ask for no
 #                    password, which opens its terminal to anyone who reaches
 #                    the lab address. The default is password.
-#   LAB_QR           on or off. on prints a QR code for the App under the
-#                    addresses, when qrencode is installed. The default is on.
+#   LAB_QR           on or off. on prints a QR code for the App preview under
+#                    the addresses, when qrencode is installed. The default is
+#                    on.
 #   CERTBOT_EMAIL    Let's Encrypt account address, optional
 #   LAB_HTTP_PORT and LAB_HTTPS_PORT, the ports nginx publishes
 #
@@ -134,7 +135,7 @@ print_addresses() {
     cat <<EOF
   Editor            $LAB_URL/ide/
   Editor password   $password
-  App               $LAB_URL/preview/
+  App preview       $LAB_URL/preview/
 EOF
     [[ "$LAB_MODE" == full ]] || printf '  Build log         %s/buildlog/\n' "$LAB_URL"
 }
@@ -142,8 +143,8 @@ EOF
 # A phone cannot reach an address on this machine, so a lab on localhost gets
 # no QR codes.
 #
-# Prints a QR code for the App, so a learner can open it on a phone or tablet
-# without typing the address. The Editor gets no code, because it needs a
+# Prints a QR code for the App preview, so a learner can open it on a phone or
+# tablet without typing the address. The Editor gets no code, because it needs a
 # keyboard and a wide screen. Nothing is printed when LAB_QR is off, when
 # qrencode is missing or when the output is not a terminal, because the code
 # is drawn with block characters that only a terminal shows.
@@ -165,7 +166,7 @@ print_qr_code() {
     done
 }
 
-# Draws the QR code the start page shows for the App. An old picture is
+# Draws the QR code the start page shows for the App preview. An old picture is
 # removed first, so the page never shows a code for an address the lab has
 # left. Without qrencode there is no picture and the page leaves the code out.
 write_app_qr() {
@@ -595,8 +596,8 @@ if [[ -z "$PREV_URL" ]]; then
 
 First steps
   1. $open_editor
-  2. Click Open app at the very bottom of the Editor. The app opens in a
-     second tab.
+  2. Click Open app preview at the very bottom of the Editor. The app
+     opens in a second tab.
 EOF
 else
     echo
@@ -609,8 +610,8 @@ EOF
     else
         cat <<EOF
   Address    CHANGED. It was $PREV_URL
-             Close the old Editor and App tabs. They no longer work. Open
-             the two addresses above.
+             Close the old Editor and App preview tabs. They no longer work.
+             Open the two addresses above.
 EOF
     fi
     echo "  Password   $password_note"
@@ -655,7 +656,7 @@ What is different
   2. The Editor has no Guide, Build log or Output area. Use these instead.
        Guide       the course manual in Heropa
        Build log   the Build log address above, in its own browser tab
-       Output      the strip along the bottom of the App tab
+       Output      the strip along the bottom of the App preview tab
      The buttons at the bottom of the Editor open these pages for you.
 
 To get full mode

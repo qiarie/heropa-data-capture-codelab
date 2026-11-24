@@ -2,7 +2,7 @@
 
 This guide takes you through the codelab on the Heropa lab, where you write the code in an editor in your browser and the app runs as a web page. You install nothing.
 
-It is built on the [published codelab](https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/), which was written for Android Studio on your own computer. This guide covers the lab only. If you would rather work in Android Studio, follow the [published codelab](https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/) instead of this guide.
+It is built on the [published Data Capture codelab](https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/), which was written for Android Studio on your own computer. This guide covers the lab only. If you would rather work in Android Studio, follow the [published Data Capture codelab](https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/) instead of this guide.
 
 The codelab text comes from the [Kotlin FHIR Data Capture](https://github.com/ohs-foundation/kotlin-fhir-data-capture) project under `codelabs` directory and is used under the Apache License 2.0.
 
@@ -14,16 +14,18 @@ In this codelab, you're going to build a Kotlin Multiplatform app with the Kotli
 Capture library. Your app will use the library to render and process FHIR Questionnaires and
 responses. The same code runs on Android, iOS, Desktop (JVM) and Web (Wasm and JS).
 
+This lab focuses on the Web (Wasm) version. Wasm is short for WebAssembly, the format that lets the app run inside your browser. Every build on the lab produces that version only, and the other platforms are not built here.
+
 ### What you'll learn
 
-*   How to integrate Kotlin FHIR Data Capture into your Kotlin Multiplatform application
+*   How to integrate Kotlin FHIR Data Capture library into your Kotlin Multiplatform application
 *   How to display a Questionnaire
 *   How to get answers as a QuestionnaireResponse
 *   How to extract FHIR resources from a QuestionnaireResponse
 
 ### What you'll need
 
-On the lab you need only a recent version of Chrome, Edge, Firefox or Safari. The app uses WebAssembly features that older browsers lack.
+On the lab you need only a recent version of Chrome, Edge, Brave, Firefox or Safari. The app uses WebAssembly features that older browsers lack.
 
 You do not need to know Kotlin. Every change is given in full, and this guide says exactly which file to open and where to put each line.
 
@@ -53,15 +55,15 @@ paste. If you haven't built a Kotlin Multiplatform app before, you can start by
 
      Editor            https://203-0-113-10.sslip.io/ide/
      Editor password   4827
-     App               https://203-0-113-10.sslip.io/preview/
+     App preview       https://203-0-113-10.sslip.io/preview/
 
      Scan the QR code to preview the app on your phone
      [QR code]
 
    First steps
      1. Open the Editor address and enter the password.
-     2. Click Open app at the very bottom of the Editor. The app opens in a
-        second tab.
+     2. Click Open app preview at the very bottom of the Editor. The app
+        opens in a second tab.
 
    Lost these details? Run ./lab-init.sh --info to print them again.
    The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
@@ -70,14 +72,14 @@ paste. If you haven't built a Kotlin Multiplatform app before, you can start by
 
 **The addresses and password in this manual are examples only.** Wherever you see `203-0-113-10.sslip.io`, `203.0.113.10` or the password `4827`, use the values from your own summary instead. Your addresses and password are your own. You can get them back at any time, and the section **Find your addresses again** below explains how.
 
-Where the example shows `[QR code]`, your terminal draws a real QR code for the App. Scan it with the camera of a phone or tablet to open the App there without typing the address. The start page of your lab, which is the address with nothing after the name, shows the same code. The App on a phone is for a look only. What it prints does not reach the Output tab on your computer. If the code looks like broken characters in your terminal, ignore it and type the address.
+Where the example shows `[QR code]`, your terminal draws a real QR code for the App preview. Scan it with the camera of a phone or tablet to open the App preview there without typing the address. The start page of your lab, which is the address with nothing after the name, shows the same code. The App preview on a phone is for a look only. What it prints does not reach the Output tab on your computer. If the code looks like broken characters in your terminal, ignore it and type the address.
 
 ### Open the editor and the app
 
-You work in two browser tabs, one for the Editor and one for the App.
+You work in two browser tabs, one for the Editor and one for the App preview.
 
 1. Open the **Editor** address in a new tab. Type the editor password, which is a code of four digits, and press **Submit**. If the summary shows `none needed` instead of a password, the Editor opens without asking.
-2. In the bar at the very bottom of the Editor, click **Open app**. The app opens in a second tab. If your browser blocks the new tab, allow it, or open the **App** address yourself.
+2. In the bar at the very bottom of the Editor, click **Open app preview**. The app opens in a second tab. If your browser blocks the new tab, allow it, or open the **App preview** address yourself.
 
 If you have room, put the two tabs side by side in separate windows.
 
@@ -96,14 +98,14 @@ You can drag the borders between the areas to resize them. The bar at the very b
 
 | Button | What it does |
 |---|---|
-| **Open app** | Opens the App tab |
+| **Open app preview** | Opens the App preview tab |
 | **Build now** | Saves every open file and builds the app straight away. You rarely need it, because saving a file starts a build automatically. |
 | **Guide** | Brings the Guide back if you closed it |
 | **Build log** | Brings the Build log back if you closed it |
 | **Output** | Brings the Output tab back if you closed it |
 | **Fix imports** | Adds the import lines your code needs. A later part explains imports. |
 
-The App tab has a bar along the top and a strip along the bottom.
+The App preview tab has a bar along the top and a strip along the bottom.
 
 | Control | What it does |
 |---|---|
@@ -114,13 +116,22 @@ The App tab has a bar along the top and a strip along the bottom.
 
 ### Find your addresses again
 
-Come here when you return to the lab after a break, when the Editor or App tab stops loading, or when you have lost the addresses or the password.
+Come here when you return to the lab after a break, when the Editor or App preview tab stops loading, or when you have lost the addresses or the password.
 
 The lab VM stops when you close the course, when you stop it yourself, and when it sits idle for a while. Your code stays on it. The VM is set up to keep the same IP address, so the same addresses normally work again once it is running.
 
+If you only lost the addresses or the password, ask the lab to print them again. Open the terminal of the VM and run these two commands. They answer at once and restart nothing.
+
+```bash
+cd ~/sdc-codelab
+./lab-init.sh --info
+```
+
+The `--info` option prints the addresses the lab last used. It does not check whether the address of the VM changed. If the tabs do not load at those addresses, follow the steps below.
+
 1. Open the course in Heropa and start the VM if it is stopped. Give it a minute.
-2. Reload the Editor and App tabs. If they load, you are done.
-3. If they do not load, or you no longer have the addresses, open the terminal of the VM and run the same two commands as before.
+2. Reload the Editor and App preview tabs. If they load, you are done.
+3. If they do not load, open the terminal of the VM and run the same two commands you used to start the lab, this time without `--info`.
 
    ```bash
    cd ~/sdc-codelab
@@ -139,20 +150,20 @@ Since the last run
   Your code  Kept as you left it.
 ```
 
-When the VM came back with a different IP address, the summary says `CHANGED` and shows the old address. The address in this example is a placeholder. Close the old Editor and App tabs, because they no longer work, and so do bookmarks to them. Open the new **Editor** address from the top of the summary, enter the password, and click **Open app**.
+When the VM came back with a different IP address, the summary says `CHANGED` and shows the old address. The address in this example is a placeholder. Close the old Editor and App preview tabs, because they no longer work, and so do bookmarks to them. Open the new **Editor** address from the top of the summary, enter the password, and click **Open app preview**.
 
 ```text
 Since the last run
   Address    CHANGED. It was https://203-0-113-10.sslip.io
-             Close the old Editor and App tabs. They no longer work. Open
-             the two addresses above.
+             Close the old Editor and App preview tabs. They no longer work.
+             Open the two addresses above.
   Password   The same as before.
   Your code  Kept as you left it.
 ```
 
 | What | After the VM restarts |
 |---|---|
-| Editor and App addresses | Normally the same. The summary says `CHANGED` when they are not. |
+| Editor and App preview addresses | Normally the same. The summary says `CHANGED` when they are not. |
 | Editor password | Always the same |
 | Your code | Always kept as you left it |
 | Build log and Output | Start empty, and fill again at the next build and the next **Submit** |
@@ -174,7 +185,7 @@ Your code, the build and the app all work in reduced mode. Two things are differ
 |---|---|
 | Guide area in the Editor | This manual in Heropa. The **Guide** button also opens it in the Editor as plain text. |
 | Build log area in the Editor | The **Build log** address that `./lab-init.sh` prints, in a separate browser tab. The **Build log** button opens it. |
-| Output area in the Editor | The **Output** strip along the bottom of the App tab |
+| Output area in the Editor | The **Output** strip along the bottom of the App preview tab |
 
 Everything else in this manual applies as written. Where a step says to look at the Build log or the Output tab, look at the page from the table.
 
@@ -227,7 +238,7 @@ There is nothing to import on the lab. The Editor tab takes the place of Android
 
 ### Run the starter app
 
-The starter app is already running on the lab as a web page. Look at the App tab, which shows a purple bar and the words **Hello World!**
+The starter app is already running on the lab as a web page. Look at the App preview tab, which shows a purple bar and the words **Hello World!**
 
 As you can see there isn't much here yet, so let's get right into displaying a questionnaire in
 your app!
@@ -238,7 +249,7 @@ The picture below shows the same app on an Android phone.
 
 ### Run the app on other platforms
 
-The lab runs the Web (Wasm) version of the app. You do not type any command. The lab builds the app automatically every time you save a file, as the next part explains.
+The lab builds and runs the Web (Wasm) version of the app and no other. You do not type any command. The lab builds the app automatically every time you save a file, as the next part explains.
 
 The app is built with Kotlin Multiplatform, so the same code also runs on Android, iOS and Desktop. The [published codelab](https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/) shows how to run it on each of them.
 
@@ -249,9 +260,9 @@ You do the same four things for every step of the codelab.
 1. Change a file in the Code area.
 2. Save it with Ctrl+S, or Cmd+S on a Mac. Saving starts a build.
 3. Watch the Build log under the code. It prints `Building the app` and then, after up to a minute, `BUILD OK`.
-4. Switch to the App tab. It has reloaded automatically and shows the new version.
+4. Switch to the App preview tab. It has reloaded automatically and shows the new version.
 
-**Builds are automatic.** The lab watches the project files. Every time you save one, it builds the app again and the App tab reloads. There is no Run button to press and no command to type. A change you have not saved is not built. A white dot on a file's tab marks unsaved changes, so while you see it the app does not have that change yet.
+**Builds are automatic.** The lab watches the project files. Every time you save one, it builds the app again and the App preview tab reloads. There is no Run button to press and no command to type. A change you have not saved is not built. A white dot on a file's tab marks unsaved changes, so while you see it the app does not have that change yet.
 
 If you save again while a build is running, the lab finishes that build and then runs one more, so your latest change is never missed.
 
@@ -268,7 +279,7 @@ Either way, the build appears in the Build log like any other, and ends with `BU
 
 ### When a build fails
 
-If the Build log prints `BUILD FAILED`, look just above it for lines that start with `e`. Each one names the file, the line number and the problem. Under them, a **What to do** list explains the common ones in plain words. Fix the file and save again. The App tab keeps showing the last version that worked.
+If the Build log prints `BUILD FAILED`, look just above it for lines that start with `e`. Each one names the file, the line number and the problem. Under them, a **What to do** list explains the common ones in plain words. Fix the file and save again. The App preview tab keeps showing the last version that worked.
 
 ### If you have used Android Studio
 
@@ -277,7 +288,7 @@ This table shows what takes the place of each thing you know.
 | In Android Studio | On the lab |
 |---|---|
 | Open Android Studio | Use the Editor tab |
-| Click **Run** in the Android Studio toolbar | Save the file, wait for `BUILD OK`, look at the App tab. **Build now** does the same without a change. |
+| Click **Run** in the Android Studio toolbar | Save the file, wait for `BUILD OK`, look at the App preview tab. **Build now** does the same without a change. |
 | Select **Sync Project with Gradle Files** | Save the file. Saving does the sync. |
 | Search Logcat | Read the **Output** tab in the Editor, next to the Build log |
 | Tap **Submit** | Click **Submit** |
@@ -357,18 +368,18 @@ Do this in the Editor tab.
 
 5. Check your change against the block below, which shows the new line in its place. The `// ...` line stands for the lines that are already in the file. You do not paste this block.
 
-```kotlin
-kotlin {
-  sourceSets {
-    commonMain.dependencies {
-      // ...
+    ```kotlin
+    kotlin {
+      sourceSets {
+        commonMain.dependencies {
+          // ...
 
-      // 3 Add the dependency for Kotlin FHIR Data Capture
-      implementation("dev.ohs.fhir:fhir-data-capture:2.0.0-alpha05")
+          // 3 Add the dependency for Kotlin FHIR Data Capture
+          implementation("dev.ohs.fhir:fhir-data-capture:2.0.0-alpha05")
+        }
+      }
     }
-  }
-}
-```
+    ```
 
 Because the dependency is in `commonMain`, Gradle picks the right artifact for each target
 platform. The `androidApp`, `desktopApp` and `webApp` modules get the library through their
@@ -384,7 +395,7 @@ On the lab, saving the file does the job of the **Sync Project with Gradle Files
 1. Save `shared/build.gradle.kts` with Ctrl+S, or Cmd+S on a Mac.
 2. Watch the Build log until it prints `BUILD OK`. This build takes two to three minutes, because the whole library is compiled into the app for the first time.
 
-The App tab looks the same after this step, because nothing uses the library yet.
+The App preview tab looks the same after this step, because nothing uses the library yet.
 
 ## 4. Display a Questionnaire
 
@@ -419,6 +430,24 @@ Start with the three imports this step needs. The web editor does not add import
 The `// 4 Imports` comment is not in the published codelab. The lab adds it to the starter code to mark the place.
 
 Copy the lines exactly. The first import is the form, and it must come from `datacapture`. A different class, `dev.ohs.fhir.model.r4.Questionnaire`, has the same short name and breaks this step.
+
+The end of the import group in `App.kt` should now look like this.
+
+```kotlin
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import org.jetbrains.compose.resources.stringResource
+
+// 4 Imports for the Questionnaire composable
+import dev.ohs.fhir.datacapture.Questionnaire
+import dev.ohs.fhir.datacapture.QuestionnaireConfig
+import kotlinx.coroutines.launch
+
+// 5 Import for the JSON encoder
+
+// 6 Imports for extracting FHIR resources
+```
+
+Check that the file has no line `import dev.ohs.fhir.model.r4.Questionnaire`. The line `import dev.ohs.fhir.model.r4.QuestionnaireResponse` at the top of the block is a different class, and it stays.
 
 ### Step 1: Add the Questionnaire composable
 
@@ -456,7 +485,7 @@ The questionnaire is shown as soon as `questionnaireJson` has been read. `Questi
 you customize how the questionnaire is displayed. Here it hides the **Cancel** button, so only the
 **Submit** button is shown, and `onCancel` can be left empty.
 
-Now run it. Save `App.kt` with Ctrl+S, wait for `BUILD OK` in the Build log, then look at the App tab. It shows the questionnaire as a form.
+Now run it. Save `App.kt` with Ctrl+S, wait for `BUILD OK` in the Build log, then look at the App preview tab. It shows the questionnaire as a form.
 
 The picture below shows the same form on an Android phone.
 
@@ -534,22 +563,6 @@ fun App() {
 
 Save `App.kt` and wait for `BUILD OK`. The form looks the same as before. Clicking **Submit** still shows nothing, because `submitQuestionnaire()` is empty until the next step.
 
-Before you go on, check that the end of the import group in `App.kt` reads like this, and that the file has no line `import dev.ohs.fhir.model.r4.Questionnaire`.
-
-```kotlin
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import org.jetbrains.compose.resources.stringResource
-
-// 4 Imports for the Questionnaire composable
-import dev.ohs.fhir.datacapture.Questionnaire
-import dev.ohs.fhir.datacapture.QuestionnaireConfig
-import kotlinx.coroutines.launch
-
-// 5 Import for the JSON encoder
-
-// 6 Imports for extracting FHIR resources
-```
-
 If you would rather jump to a working version, type `step 4` in the **Terminal** tab.
 
 A questionnaire isn't very helpful if you can't see the answers that users input though. Let's go
@@ -615,10 +628,10 @@ on Web.
 On the lab the output appears in the **Output** tab of the Editor, next to the Build log.
 
 1. Save `App.kt` and wait for `BUILD OK` in the Build log.
-2. Switch to the App tab, fill in the form and click **Submit**.
+2. Switch to the App preview tab, fill in the form and click **Submit**.
 3. Switch back to the Editor tab. The **Output** tab has come to the front and shows an entry named `response`, with the JSON laid out for reading. Each entry has a **Copy** button.
 
-The same output also shows in a strip at the bottom of the App tab.
+The same output also shows in a strip at the bottom of the App preview tab.
 
 The same text also goes to the browser console, which opens with F12, if you prefer to read it there.
 
@@ -711,7 +724,7 @@ private fun submitQuestionnaire(
 Now run it.
 
 1. Save `App.kt` and wait for `BUILD OK` in the Build log.
-2. Switch to the App tab, fill in the form and click **Submit**.
+2. Switch to the App preview tab, fill in the form and click **Submit**.
 3. Switch back to the Editor tab and look in the **Output** tab for the entry named `extraction result`. The newest entry is on top, with the `response` entry under it.
 
 It is a FHIR Bundle of type `transaction` holding one Patient, with the names you typed.
@@ -753,8 +766,8 @@ The other platforms need tools the lab does not have. To try them, follow the [p
 | Symptom | Fix |
 |---|---|
 | You saved a file and the Build log shows no new build | Check the file's tab for a white dot, which means it is not saved yet. Then click **Build now** at the very bottom of the Editor, or type `build` in the **Terminal** tab. |
-| The App tab says the app is still building | Wait for `BUILD OK` in the Build log. The page reloads automatically. |
-| The App tab did not change after a build | Check that **Auto refresh** is ticked, or click **Refresh**. If it still shows the old version, check that the Build log says `BUILD OK` and not `BUILD FAILED`. |
+| The App preview tab says the app is still building | Wait for `BUILD OK` in the Build log. The page reloads automatically. |
+| The App preview tab did not change after a build | Check that **Auto refresh** is ticked, or click **Refresh**. If it still shows the old version, check that the Build log says `BUILD OK` and not `BUILD FAILED`. |
 | `Unresolved reference` in the Build log | An import is missing or misspelled. Click **Fix imports**, or compare your imports with the ones the step gives. |
 | `No parameter with name 'questionnaireJson' found` or `No value passed for parameter 'status'` | `App.kt` imports the wrong `Questionnaire`. Delete `import dev.ohs.fhir.model.r4.Questionnaire`, add `import dev.ohs.fhir.datacapture.Questionnaire`, or click **Fix imports**. |
 | `Conflicting import` or `Overload resolution ambiguity` on `Questionnaire` | The import in step 6 needs `as FhirQuestionnaire` at the end. |
@@ -762,14 +775,14 @@ The other platforms need tools the lab does not have. To try them, follow the [p
 | `Unresolved reference 'Alignment'` | The `Hello World!` line is still in the file. Step 4 replaces it. |
 | `Unresolved reference 'json'` | The `// 5.1` code is missing. It creates the value that the `// 5.2` and `// 6` code use. |
 | `Expecting` or `Syntax error` | A bracket, brace or quote is missing or extra near the line number in the error. |
-| The App tab is blank | Your browser is too old for this app. Use a current Chrome, Edge, Firefox or Safari. |
-| Nothing appears in the Output tab | Click **Submit** again after the app has reloaded. Step 5 must be built for anything to print. The App tab and the Editor must also be open in the same browser, because the output travels between them through that browser. |
+| The App preview tab is blank | Your browser is too old for this app. Use a current Chrome, Edge, Brave, Firefox or Safari. |
+| Nothing appears in the Output tab | Click **Submit** again after the app has reloaded. Step 5 must be built for anything to print. The App preview tab and the Editor must also be open in the same browser, because the output travels between them through that browser. |
 | The Guide, Build log or Output area is gone | Click its name in the bar at the very bottom of the Editor. |
-| **Open app** does nothing | The browser blocked the new tab. Allow pop-ups for the lab address, or open the **App** address that `./lab-init.sh` printed. |
+| **Open app preview** does nothing | The browser blocked the new tab. Allow pop-ups for the lab address, or open the **App preview** address that `./lab-init.sh` printed. |
 | The code is in a state you cannot fix | Type `step reset` in the **Terminal** tab, or `step` with the number of the last step you finished. |
 | The Editor asks for the password again | Run `./lab-init.sh --info` in the Heropa terminal. It prints the same password without restarting anything. |
 | You came back and the tabs do not load | The VM was stopped. Start it in Heropa, wait a minute and reload the tabs. If they still do not load, run `./lab-init.sh` in its terminal and read **Since the last run** in what it prints. When that says `CHANGED`, open the new addresses. See **Find your addresses again**. |
-| The Editor or App address stopped working | The same cause and the same fix as the row above. |
+| The Editor or App preview address stopped working | The same cause and the same fix as the row above. |
 | You lost the addresses or the password | Run `./lab-init.sh --info` in the Heropa terminal. It prints them again. |
 | The browser warns that the connection is not private | The lab is in reduced mode. Click **Advanced**, then **Proceed**. See **If the lab starts in reduced mode**. |
 | The Editor shows a notice about reduced mode, or has no Guide, Build log or Output area | The lab could not get a trusted certificate. Use the pages listed under **If the lab starts in reduced mode**, and run `./lab-init.sh` again later. |

@@ -12,8 +12,8 @@
 // leaves the manual its full height.
 //
 // The app is not shown inside the editor, because a fourth pane left too
-// little room for each. The App button in the status bar opens it in a
-// browser tab of its own. Other buttons there bring back a pane that was
+// little room for each. The Open app preview button in the status bar opens
+// it in a browser tab of its own. Other buttons there bring back a pane that was
 // closed.
 //
 // The lab can also run in reduced mode, which lab-init.sh picks when it could
@@ -241,7 +241,7 @@ function activate(context) {
       },
     }),
   );
-  statusButton(context, '$(link-external) Open app', 'Open the app you are building in a new browser tab', 'codelab.openApp', 103);
+  statusButton(context, '$(link-external) Open app preview', 'Open the app you are building in a new browser tab', 'codelab.openApp', 103);
   statusButton(context, '$(play) Build now', 'Save every file and build the app now', 'codelab.buildNow', 102.5);
   statusButton(context, '$(book) Guide', 'Show the codelab guide', 'codelab.showGuide', 102);
   const where = REDUCED ? ' in a new browser tab' : '';

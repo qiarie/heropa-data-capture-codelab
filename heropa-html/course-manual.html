@@ -1,21 +1,22 @@
 <h1>Capture and process health data with Kotlin FHIR Data Capture</h1>
 <p>This guide takes you through the codelab on the Heropa lab, where you write the code in an editor in your browser and the app runs as a web page. You install nothing.</p>
-<p>It is built on the <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published codelab</a>, which was written for Android Studio on your own computer. This guide covers the lab only. If you would rather work in Android Studio, follow the <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published codelab</a> instead of this guide.</p>
+<p>It is built on the <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published Data Capture codelab</a>, which was written for Android Studio on your own computer. This guide covers the lab only. If you would rather work in Android Studio, follow the <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published Data Capture codelab</a> instead of this guide.</p>
 <p>The codelab text comes from the <a href="https://github.com/ohs-foundation/kotlin-fhir-data-capture">Kotlin FHIR Data Capture</a> project under <code>codelabs</code> directory and is used under the Apache License 2.0.</p>
 <h2>1. Before you begin</h2>
 <h3>What you'll build</h3>
 <p>In this codelab, you're going to build a Kotlin Multiplatform app with the Kotlin FHIR Data
 Capture library. Your app will use the library to render and process FHIR Questionnaires and
 responses. The same code runs on Android, iOS, Desktop (JVM) and Web (Wasm and JS).</p>
+<p>This lab focuses on the Web (Wasm) version. Wasm is short for WebAssembly, the format that lets the app run inside your browser. Every build on the lab produces that version only, and the other platforms are not built here.</p>
 <h3>What you'll learn</h3>
 <ul>
-<li>How to integrate Kotlin FHIR Data Capture into your Kotlin Multiplatform application</li>
+<li>How to integrate Kotlin FHIR Data Capture library into your Kotlin Multiplatform application</li>
 <li>How to display a Questionnaire</li>
 <li>How to get answers as a QuestionnaireResponse</li>
 <li>How to extract FHIR resources from a QuestionnaireResponse</li>
 </ul>
 <h3>What you'll need</h3>
-<p>On the lab you need only a recent version of Chrome, Edge, Firefox or Safari. The app uses WebAssembly features that older browsers lack.</p>
+<p>On the lab you need only a recent version of Chrome, Edge, Brave, Firefox or Safari. The app uses WebAssembly features that older browsers lack.</p>
 <p>You do not need to know Kotlin. Every change is given in full, and this guide says exactly which file to open and where to put each line.</p>
 <p>This codelab is focused on
 <a href="https://github.com/ohs-foundation/kotlin-fhir-data-capture">Kotlin FHIR Data Capture</a>.
@@ -41,15 +42,15 @@ The lab is ready. Open these in the browser on your own computer.
 
   Editor            https://203-0-113-10.sslip.io/ide/
   Editor password   4827
-  App               https://203-0-113-10.sslip.io/preview/
+  App preview       https://203-0-113-10.sslip.io/preview/
 
   Scan the QR code to preview the app on your phone
   [QR code]
 
 First steps
   1. Open the Editor address and enter the password.
-  2. Click Open app at the very bottom of the Editor. The app opens in a
-     second tab.
+  2. Click Open app preview at the very bottom of the Editor. The app
+     opens in a second tab.
 
 Lost these details? Run ./lab-init.sh --info to print them again.
 The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
@@ -58,12 +59,12 @@ The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
 </li>
 </ol>
 <p style="border-left: 4px solid #e0a800; background: #fff8e1; padding: 8px 12px;"><strong>The addresses and password in this manual are examples only.</strong> Wherever you see <code>203-0-113-10.sslip.io</code>, <code>203.0.113.10</code> or the password <code>4827</code>, use the values from your own summary instead. Your addresses and password are your own. You can get them back at any time, and the section <em>Find your addresses again</em> below explains how.</p>
-<p>Where the example shows <code>[QR code]</code>, your terminal draws a real QR code for the App. Scan it with the camera of a phone or tablet to open the App there without typing the address. The start page of your lab, which is the address with nothing after the name, shows the same code. The App on a phone is for a look only. What it prints does not reach the Output tab on your computer. If the code looks like broken characters in your terminal, ignore it and type the address.</p>
+<p>Where the example shows <code>[QR code]</code>, your terminal draws a real QR code for the App preview. Scan it with the camera of a phone or tablet to open the App preview there without typing the address. The start page of your lab, which is the address with nothing after the name, shows the same code. The App preview on a phone is for a look only. What it prints does not reach the Output tab on your computer. If the code looks like broken characters in your terminal, ignore it and type the address.</p>
 <h3>Open the editor and the app</h3>
-<p>You work in two browser tabs, one for the Editor and one for the App.</p>
+<p>You work in two browser tabs, one for the Editor and one for the App preview.</p>
 <ol>
 <li>Open the <strong>Editor</strong> address in a new tab. Type the editor password, which is a code of four digits, and press <strong>Submit</strong>. If the summary shows <code>none needed</code> instead of a password, the Editor opens without asking.</li>
-<li>In the bar at the very bottom of the Editor, click <strong>Open app</strong>. The app opens in a second tab. If your browser blocks the new tab, allow it, or open the <strong>App</strong> address yourself.</li>
+<li>In the bar at the very bottom of the Editor, click <strong>Open app preview</strong>. The app opens in a second tab. If your browser blocks the new tab, allow it, or open the <strong>App preview</strong> address yourself.</li>
 </ol>
 <p>If you have room, put the two tabs side by side in separate windows.</p>
 <p>The Editor tab has six areas. The last three share the space under the code, and you switch between them by clicking their tabs.</p>
@@ -104,7 +105,7 @@ The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
 <tr>
 <td style="border: 1px solid #333; padding: 8px;">Guide</td>
 <td style="border: 1px solid #333; padding: 8px;">Right</td>
-<td style="border: 1px solid #333; padding: 8px;">This guide</td>
+<td style="border: 1px solid #333; padding: 8px;">This guide, one step at a time. <strong>Back</strong> and <strong>Next</strong> move between the steps, the list between them jumps to any step, and <strong>Show all</strong> puts the whole guide on one page.</td>
 </tr>
 </tbody>
 </table>
@@ -118,8 +119,8 @@ The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
 </thead>
 <tbody>
 <tr>
-<td style="border: 1px solid #333; padding: 8px;"><strong>Open app</strong></td>
-<td style="border: 1px solid #333; padding: 8px;">Opens the App tab</td>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Open app preview</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Opens the App preview tab</td>
 </tr>
 <tr>
 <td style="border: 1px solid #333; padding: 8px;"><strong>Build now</strong></td>
@@ -143,7 +144,7 @@ The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
 </tr>
 </tbody>
 </table>
-<p>The App tab has a bar along the top and a strip along the bottom.</p>
+<p>The App preview tab has a bar along the top and a strip along the bottom.</p>
 <table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
 <thead>
 <tr>
@@ -171,17 +172,22 @@ The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
 </tbody>
 </table>
 <h3>Find your addresses again</h3>
-<p>Come here when you return to the lab after a break, when the Editor or App tab stops loading, or when you have lost the addresses or the password.</p>
+<p>Come here when you return to the lab after a break, when the Editor or App preview tab stops loading, or when you have lost the addresses or the password.</p>
 <p>The lab VM stops when you close the course, when you stop it yourself, and when it sits idle for a while. Your code stays on it. The VM is set up to keep the same IP address, so the same addresses normally work again once it is running.</p>
+<p>If you only lost the addresses or the password, ask the lab to print them again. Open the terminal of the VM and run these two commands. They answer at once and restart nothing.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">cd ~/sdc-codelab
+./lab-init.sh --info
+</code></pre>
+<p>The <code>--info</code> option prints the addresses the lab last used. It does not check whether the address of the VM changed. If the tabs do not load at those addresses, follow the steps below.</p>
 <ol>
 <li>
 <p>Open the course in Heropa and start the VM if it is stopped. Give it a minute.</p>
 </li>
 <li>
-<p>Reload the Editor and App tabs. If they load, you are done.</p>
+<p>Reload the Editor and App preview tabs. If they load, you are done.</p>
 </li>
 <li>
-<p>If they do not load, or you no longer have the addresses, open the terminal of the VM and run the same two commands as before.</p>
+<p>If they do not load, open the terminal of the VM and run the same two commands you used to start the lab, this time without <code>--info</code>.</p>
 <pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">cd ~/sdc-codelab
 ./lab-init.sh
 </code></pre>
@@ -197,11 +203,11 @@ The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
   Password   The same as before.
   Your code  Kept as you left it.
 </code></pre>
-<p>When the VM came back with a different IP address, the summary says <code>CHANGED</code> and shows the old address. The address in this example is a placeholder. Close the old Editor and App tabs, because they no longer work, and so do bookmarks to them. Open the new <strong>Editor</strong> address from the top of the summary, enter the password, and click <strong>Open app</strong>.</p>
+<p>When the VM came back with a different IP address, the summary says <code>CHANGED</code> and shows the old address. The address in this example is a placeholder. Close the old Editor and App preview tabs, because they no longer work, and so do bookmarks to them. Open the new <strong>Editor</strong> address from the top of the summary, enter the password, and click <strong>Open app preview</strong>.</p>
 <pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">Since the last run
   Address    CHANGED. It was https://203-0-113-10.sslip.io
-             Close the old Editor and App tabs. They no longer work. Open
-             the two addresses above.
+             Close the old Editor and App preview tabs. They no longer work.
+             Open the two addresses above.
   Password   The same as before.
   Your code  Kept as you left it.
 </code></pre>
@@ -214,7 +220,7 @@ The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
 </thead>
 <tbody>
 <tr>
-<td style="border: 1px solid #333; padding: 8px;">Editor and App addresses</td>
+<td style="border: 1px solid #333; padding: 8px;">Editor and App preview addresses</td>
 <td style="border: 1px solid #333; padding: 8px;">Normally the same. The summary says <code>CHANGED</code> when they are not.</td>
 </tr>
 <tr>
@@ -258,7 +264,7 @@ The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
 </tr>
 <tr>
 <td style="border: 1px solid #333; padding: 8px;">Output area in the Editor</td>
-<td style="border: 1px solid #333; padding: 8px;">The <strong>Output</strong> strip along the bottom of the App tab</td>
+<td style="border: 1px solid #333; padding: 8px;">The <strong>Output</strong> strip along the bottom of the App preview tab</td>
 </tr>
 </tbody>
 </table>
@@ -321,13 +327,13 @@ at <code>shared/src/commonMain/composeResources/files/questionnaire.json</code>,
 <h3>Import the app into Android Studio</h3>
 <p>There is nothing to import on the lab. The Editor tab takes the place of Android Studio, and the project is already open in it.</p>
 <h3>Run the starter app</h3>
-<p>The starter app is already running on the lab as a web page. Look at the App tab, which shows a purple bar and the words <strong>Hello World!</strong></p>
+<p>The starter app is already running on the lab as a web page. Look at the App preview tab, which shows a purple bar and the words <strong>Hello World!</strong></p>
 <p>As you can see there isn't much here yet, so let's get right into displaying a questionnaire in
 your app!</p>
 <p>The picture below shows the same app on an Android phone.</p>
 <p><img src="https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image3.png" alt="The Hello World app on an Android phone" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /></p>
 <h3>Run the app on other platforms</h3>
-<p>The lab runs the Web (Wasm) version of the app. You do not type any command. The lab builds the app automatically every time you save a file, as the next part explains.</p>
+<p>The lab builds and runs the Web (Wasm) version of the app and no other. You do not type any command. The lab builds the app automatically every time you save a file, as the next part explains.</p>
 <p>The app is built with Kotlin Multiplatform, so the same code also runs on Android, iOS and Desktop. The <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published codelab</a> shows how to run it on each of them.</p>
 <h3>How to run the app</h3>
 <p>You do the same four things for every step of the codelab.</p>
@@ -335,9 +341,9 @@ your app!</p>
 <li>Change a file in the Code area.</li>
 <li>Save it with Ctrl+S, or Cmd+S on a Mac. Saving starts a build.</li>
 <li>Watch the Build log under the code. It prints <code>Building the app</code> and then, after up to a minute, <code>BUILD OK</code>.</li>
-<li>Switch to the App tab. It has reloaded automatically and shows the new version.</li>
+<li>Switch to the App preview tab. It has reloaded automatically and shows the new version.</li>
 </ol>
-<p style="border-left: 4px solid #4a90d9; background: #eef5fc; padding: 8px 12px;"><strong>Builds are automatic.</strong> The lab watches the project files. Every time you save one, it builds the app again and the App tab reloads. There is no Run button to press and no command to type. A change you have not saved is not built. A white dot on a file's tab marks unsaved changes, so while you see it the app does not have that change yet.</p>
+<p style="border-left: 4px solid #4a90d9; background: #eef5fc; padding: 8px 12px;"><strong>Builds are automatic.</strong> The lab watches the project files. Every time you save one, it builds the app again and the App preview tab reloads. There is no Run button to press and no command to type. A change you have not saved is not built. A white dot on a file's tab marks unsaved changes, so while you see it the app does not have that change yet.</p>
 <p>If you save again while a build is running, the lab finishes that build and then runs one more, so your latest change is never missed.</p>
 <h3>Start a build yourself</h3>
 <p>You rarely need to, but you can start a build without changing a file. Do this when you are not sure a build ran, when the Build log shows nothing new after a save, or when you want to see the result of the last build again.</p>
@@ -361,7 +367,7 @@ your app!</p>
 </table>
 <p>Either way, the build appears in the Build log like any other, and ends with <code>BUILD OK</code> or <code>BUILD FAILED</code>. When nothing changed since the last build, it finishes in a few seconds.</p>
 <h3>When a build fails</h3>
-<p>If the Build log prints <code>BUILD FAILED</code>, look just above it for lines that start with <code>e</code>. Each one names the file, the line number and the problem. Under them, a <strong>What to do</strong> list explains the common ones in plain words. Fix the file and save again. The App tab keeps showing the last version that worked.</p>
+<p>If the Build log prints <code>BUILD FAILED</code>, look just above it for lines that start with <code>e</code>. Each one names the file, the line number and the problem. Under them, a <strong>What to do</strong> list explains the common ones in plain words. Fix the file and save again. The App preview tab keeps showing the last version that worked.</p>
 <h3>If you have used Android Studio</h3>
 <p>This table shows what takes the place of each thing you know.</p>
 <table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
@@ -378,7 +384,7 @@ your app!</p>
 </tr>
 <tr>
 <td style="border: 1px solid #333; padding: 8px;">Click <strong>Run</strong> in the Android Studio toolbar</td>
-<td style="border: 1px solid #333; padding: 8px;">Save the file, wait for <code>BUILD OK</code>, look at the App tab. <strong>Build now</strong> does the same without a change.</td>
+<td style="border: 1px solid #333; padding: 8px;">Save the file, wait for <code>BUILD OK</code>, look at the App preview tab. <strong>Build now</strong> does the same without a change.</td>
 </tr>
 <tr>
 <td style="border: 1px solid #333; padding: 8px;">Select <strong>Sync Project with Gradle Files</strong></td>
@@ -514,8 +520,6 @@ following line below the <code>// 3 Add the dependency for Kotlin FHIR Data Capt
 </li>
 <li>
 <p>Check your change against the block below, which shows the new line in its place. The <code>// ...</code> line stands for the lines that are already in the file. You do not paste this block.</p>
-</li>
-</ol>
 <pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">kotlin {
   sourceSets {
     commonMain.dependencies {
@@ -527,6 +531,8 @@ following line below the <code>// 3 Add the dependency for Kotlin FHIR Data Capt
   }
 }
 </code></pre>
+</li>
+</ol>
 <p>Because the dependency is in <code>commonMain</code>, Gradle picks the right artifact for each target
 platform. The <code>androidApp</code>, <code>desktopApp</code> and <code>webApp</code> modules get the library through their
 dependency on <code>shared</code>.</p>
@@ -538,7 +544,7 @@ model and <code>kotlinx-serialization-json</code>, which you'll use later in the
 <li>Save <code>shared/build.gradle.kts</code> with Ctrl+S, or Cmd+S on a Mac.</li>
 <li>Watch the Build log until it prints <code>BUILD OK</code>. This build takes two to three minutes, because the whole library is compiled into the app for the first time.</li>
 </ol>
-<p>The App tab looks the same after this step, because nothing uses the library yet.</p>
+<p>The App preview tab looks the same after this step, because nothing uses the library yet.</p>
 <h2>4. Display a Questionnaire</h2>
 <p>In this step, you will add the functionality to the starter app to render a questionnaire with the
 <code>Questionnaire</code> composable.</p>
@@ -570,6 +576,20 @@ import kotlinx.coroutines.launch
 </ol>
 <p>The <code>// 4 Imports</code> comment is not in the published codelab. The lab adds it to the starter code to mark the place.</p>
 <p>Copy the lines exactly. The first import is the form, and it must come from <code>datacapture</code>. A different class, <code>dev.ohs.fhir.model.r4.Questionnaire</code>, has the same short name and breaks this step.</p>
+<p>The end of the import group in <code>App.kt</code> should now look like this.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import org.jetbrains.compose.resources.stringResource
+
+// 4 Imports for the Questionnaire composable
+import dev.ohs.fhir.datacapture.Questionnaire
+import dev.ohs.fhir.datacapture.QuestionnaireConfig
+import kotlinx.coroutines.launch
+
+// 5 Import for the JSON encoder
+
+// 6 Imports for extracting FHIR resources
+</code></pre>
+<p>Check that the file has no line <code>import dev.ohs.fhir.model.r4.Questionnaire</code>. The line <code>import dev.ohs.fhir.model.r4.QuestionnaireResponse</code> at the top of the block is a different class, and it stays.</p>
 <h3>Step 1: Add the Questionnaire composable</h3>
 <p>The <code>Questionnaire</code> composable requires a JSON encoded FHIR Questionnaire for it to render.</p>
 <p>You can look at the <code>questionnaire.json</code> file if you want, but one of the benefits of Kotlin FHIR
@@ -607,7 +627,7 @@ questionnaireJson?.let { questionnaireJson -&gt;
 <p>The questionnaire is shown as soon as <code>questionnaireJson</code> has been read. <code>QuestionnaireConfig</code> lets
 you customize how the questionnaire is displayed. Here it hides the <strong>Cancel</strong> button, so only the
 <strong>Submit</strong> button is shown, and <code>onCancel</code> can be left empty.</p>
-<p>Now run it. Save <code>App.kt</code> with Ctrl+S, wait for <code>BUILD OK</code> in the Build log, then look at the App tab. It shows the questionnaire as a form.</p>
+<p>Now run it. Save <code>App.kt</code> with Ctrl+S, wait for <code>BUILD OK</code> in the Build log, then look at the App preview tab. It shows the questionnaire as a form.</p>
 <p>The picture below shows the same form on an Android phone.</p>
 <p><img src="https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image2.png" alt="The questionnaire shown as a form on an Android phone" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /></p>
 <p>If the Build log prints <code>BUILD FAILED</code>, read the <strong>What to do</strong> list under the errors, or click <strong>Fix imports</strong> at the bottom of the Editor.</p>
@@ -673,19 +693,6 @@ fun App() {
 }
 </code></pre>
 <p>Save <code>App.kt</code> and wait for <code>BUILD OK</code>. The form looks the same as before. Clicking <strong>Submit</strong> still shows nothing, because <code>submitQuestionnaire()</code> is empty until the next step.</p>
-<p>Before you go on, check that the end of the import group in <code>App.kt</code> reads like this, and that the file has no line <code>import dev.ohs.fhir.model.r4.Questionnaire</code>.</p>
-<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import org.jetbrains.compose.resources.stringResource
-
-// 4 Imports for the Questionnaire composable
-import dev.ohs.fhir.datacapture.Questionnaire
-import dev.ohs.fhir.datacapture.QuestionnaireConfig
-import kotlinx.coroutines.launch
-
-// 5 Import for the JSON encoder
-
-// 6 Imports for extracting FHIR resources
-</code></pre>
 <p>If you would rather jump to a working version, type <code>step 4</code> in the <strong>Terminal</strong> tab.</p>
 <p>A questionnaire isn't very helpful if you can't see the answers that users input though. Let's go
 on to the next step of getting a Questionnaire Response!</p>
@@ -741,10 +748,10 @@ on Web.</p>
 <p>On the lab the output appears in the <strong>Output</strong> tab of the Editor, next to the Build log.</p>
 <ol>
 <li>Save <code>App.kt</code> and wait for <code>BUILD OK</code> in the Build log.</li>
-<li>Switch to the App tab, fill in the form and click <strong>Submit</strong>.</li>
+<li>Switch to the App preview tab, fill in the form and click <strong>Submit</strong>.</li>
 <li>Switch back to the Editor tab. The <strong>Output</strong> tab has come to the front and shows an entry named <code>response</code>, with the JSON laid out for reading. Each entry has a <strong>Copy</strong> button.</li>
 </ol>
-<p>The same output also shows in a strip at the bottom of the App tab.</p>
+<p>The same output also shows in a strip at the bottom of the App preview tab.</p>
 <p>The same text also goes to the browser console, which opens with F12, if you prefer to read it there.</p>
 <p>If you would rather jump to a working version, type <code>step 5</code> in the <strong>Terminal</strong> tab.</p>
 <h2>6. Extract FHIR Resources from a QuestionnaireResponse</h2>
@@ -828,7 +835,7 @@ this case a single Patient resource.</p>
 <p>Now run it.</p>
 <ol>
 <li>Save <code>App.kt</code> and wait for <code>BUILD OK</code> in the Build log.</li>
-<li>Switch to the App tab, fill in the form and click <strong>Submit</strong>.</li>
+<li>Switch to the App preview tab, fill in the form and click <strong>Submit</strong>.</li>
 <li>Switch back to the Editor tab and look in the <strong>Output</strong> tab for the entry named <code>extraction result</code>. The newest entry is on top, with the <code>response</code> entry under it.</li>
 </ol>
 <p>It is a FHIR Bundle of type <code>transaction</code> holding one Patient, with the names you typed.</p>
@@ -875,11 +882,11 @@ features the library supports</li>
 <td style="border: 1px solid #333; padding: 8px;">Check the file's tab for a white dot, which means it is not saved yet. Then click <strong>Build now</strong> at the very bottom of the Editor, or type <code>build</code> in the <strong>Terminal</strong> tab.</td>
 </tr>
 <tr>
-<td style="border: 1px solid #333; padding: 8px;">The App tab says the app is still building</td>
+<td style="border: 1px solid #333; padding: 8px;">The App preview tab says the app is still building</td>
 <td style="border: 1px solid #333; padding: 8px;">Wait for <code>BUILD OK</code> in the Build log. The page reloads automatically.</td>
 </tr>
 <tr>
-<td style="border: 1px solid #333; padding: 8px;">The App tab did not change after a build</td>
+<td style="border: 1px solid #333; padding: 8px;">The App preview tab did not change after a build</td>
 <td style="border: 1px solid #333; padding: 8px;">Check that <strong>Auto refresh</strong> is ticked, or click <strong>Refresh</strong>. If it still shows the old version, check that the Build log says <code>BUILD OK</code> and not <code>BUILD FAILED</code>.</td>
 </tr>
 <tr>
@@ -911,20 +918,20 @@ features the library supports</li>
 <td style="border: 1px solid #333; padding: 8px;">A bracket, brace or quote is missing or extra near the line number in the error.</td>
 </tr>
 <tr>
-<td style="border: 1px solid #333; padding: 8px;">The App tab is blank</td>
-<td style="border: 1px solid #333; padding: 8px;">Your browser is too old for this app. Use a current Chrome, Edge, Firefox or Safari.</td>
+<td style="border: 1px solid #333; padding: 8px;">The App preview tab is blank</td>
+<td style="border: 1px solid #333; padding: 8px;">Your browser is too old for this app. Use a current Chrome, Edge, Brave, Firefox or Safari.</td>
 </tr>
 <tr>
 <td style="border: 1px solid #333; padding: 8px;">Nothing appears in the Output tab</td>
-<td style="border: 1px solid #333; padding: 8px;">Click <strong>Submit</strong> again after the app has reloaded. Step 5 must be built for anything to print. The App tab and the Editor must also be open in the same browser, because the output travels between them through that browser.</td>
+<td style="border: 1px solid #333; padding: 8px;">Click <strong>Submit</strong> again after the app has reloaded. Step 5 must be built for anything to print. The App preview tab and the Editor must also be open in the same browser, because the output travels between them through that browser.</td>
 </tr>
 <tr>
 <td style="border: 1px solid #333; padding: 8px;">The Guide, Build log or Output area is gone</td>
 <td style="border: 1px solid #333; padding: 8px;">Click its name in the bar at the very bottom of the Editor.</td>
 </tr>
 <tr>
-<td style="border: 1px solid #333; padding: 8px;"><strong>Open app</strong> does nothing</td>
-<td style="border: 1px solid #333; padding: 8px;">The browser blocked the new tab. Allow pop-ups for the lab address, or open the <strong>App</strong> address that <code>./lab-init.sh</code> printed.</td>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Open app preview</strong> does nothing</td>
+<td style="border: 1px solid #333; padding: 8px;">The browser blocked the new tab. Allow pop-ups for the lab address, or open the <strong>App preview</strong> address that <code>./lab-init.sh</code> printed.</td>
 </tr>
 <tr>
 <td style="border: 1px solid #333; padding: 8px;">The code is in a state you cannot fix</td>
@@ -939,7 +946,7 @@ features the library supports</li>
 <td style="border: 1px solid #333; padding: 8px;">The VM was stopped. Start it in Heropa, wait a minute and reload the tabs. If they still do not load, run <code>./lab-init.sh</code> in its terminal and read <strong>Since the last run</strong> in what it prints. When that says <code>CHANGED</code>, open the new addresses. See <em>Find your addresses again</em>.</td>
 </tr>
 <tr>
-<td style="border: 1px solid #333; padding: 8px;">The Editor or App address stopped working</td>
+<td style="border: 1px solid #333; padding: 8px;">The Editor or App preview address stopped working</td>
 <td style="border: 1px solid #333; padding: 8px;">The same cause and the same fix as the row above.</td>
 </tr>
 <tr>

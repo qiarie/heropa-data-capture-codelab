@@ -21,8 +21,6 @@ following line below the <code>// 3 Add the dependency for Kotlin FHIR Data Capt
 </li>
 <li>
 <p>Check your change against the block below, which shows the new line in its place. The <code>// ...</code> line stands for the lines that are already in the file. You do not paste this block.</p>
-</li>
-</ol>
 <pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">kotlin {
   sourceSets {
     commonMain.dependencies {
@@ -34,6 +32,8 @@ following line below the <code>// 3 Add the dependency for Kotlin FHIR Data Capt
   }
 }
 </code></pre>
+</li>
+</ol>
 <p>Because the dependency is in <code>commonMain</code>, Gradle picks the right artifact for each target
 platform. The <code>androidApp</code>, <code>desktopApp</code> and <code>webApp</code> modules get the library through their
 dependency on <code>shared</code>.</p>
@@ -45,4 +45,4 @@ model and <code>kotlinx-serialization-json</code>, which you'll use later in the
 <li>Save <code>shared/build.gradle.kts</code> with Ctrl+S, or Cmd+S on a Mac.</li>
 <li>Watch the Build log until it prints <code>BUILD OK</code>. This build takes two to three minutes, because the whole library is compiled into the app for the first time.</li>
 </ol>
-<p>The App tab looks the same after this step, because nothing uses the library yet.</p>
+<p>The App preview tab looks the same after this step, because nothing uses the library yet.</p>

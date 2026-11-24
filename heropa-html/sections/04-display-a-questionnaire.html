@@ -29,6 +29,20 @@ import kotlinx.coroutines.launch
 </ol>
 <p>The <code>// 4 Imports</code> comment is not in the published codelab. The lab adds it to the starter code to mark the place.</p>
 <p>Copy the lines exactly. The first import is the form, and it must come from <code>datacapture</code>. A different class, <code>dev.ohs.fhir.model.r4.Questionnaire</code>, has the same short name and breaks this step.</p>
+<p>The end of the import group in <code>App.kt</code> should now look like this.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import org.jetbrains.compose.resources.stringResource
+
+// 4 Imports for the Questionnaire composable
+import dev.ohs.fhir.datacapture.Questionnaire
+import dev.ohs.fhir.datacapture.QuestionnaireConfig
+import kotlinx.coroutines.launch
+
+// 5 Import for the JSON encoder
+
+// 6 Imports for extracting FHIR resources
+</code></pre>
+<p>Check that the file has no line <code>import dev.ohs.fhir.model.r4.Questionnaire</code>. The line <code>import dev.ohs.fhir.model.r4.QuestionnaireResponse</code> at the top of the block is a different class, and it stays.</p>
 <h3>Step 1: Add the Questionnaire composable</h3>
 <p>The <code>Questionnaire</code> composable requires a JSON encoded FHIR Questionnaire for it to render.</p>
 <p>You can look at the <code>questionnaire.json</code> file if you want, but one of the benefits of Kotlin FHIR
@@ -66,7 +80,7 @@ questionnaireJson?.let { questionnaireJson -&gt;
 <p>The questionnaire is shown as soon as <code>questionnaireJson</code> has been read. <code>QuestionnaireConfig</code> lets
 you customize how the questionnaire is displayed. Here it hides the <strong>Cancel</strong> button, so only the
 <strong>Submit</strong> button is shown, and <code>onCancel</code> can be left empty.</p>
-<p>Now run it. Save <code>App.kt</code> with Ctrl+S, wait for <code>BUILD OK</code> in the Build log, then look at the App tab. It shows the questionnaire as a form.</p>
+<p>Now run it. Save <code>App.kt</code> with Ctrl+S, wait for <code>BUILD OK</code> in the Build log, then look at the App preview tab. It shows the questionnaire as a form.</p>
 <p>The picture below shows the same form on an Android phone.</p>
 <p><img src="https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image2.png" alt="The questionnaire shown as a form on an Android phone" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /></p>
 <p>If the Build log prints <code>BUILD FAILED</code>, read the <strong>What to do</strong> list under the errors, or click <strong>Fix imports</strong> at the bottom of the Editor.</p>
@@ -132,19 +146,6 @@ fun App() {
 }
 </code></pre>
 <p>Save <code>App.kt</code> and wait for <code>BUILD OK</code>. The form looks the same as before. Clicking <strong>Submit</strong> still shows nothing, because <code>submitQuestionnaire()</code> is empty until the next step.</p>
-<p>Before you go on, check that the end of the import group in <code>App.kt</code> reads like this, and that the file has no line <code>import dev.ohs.fhir.model.r4.Questionnaire</code>.</p>
-<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import org.jetbrains.compose.resources.stringResource
-
-// 4 Imports for the Questionnaire composable
-import dev.ohs.fhir.datacapture.Questionnaire
-import dev.ohs.fhir.datacapture.QuestionnaireConfig
-import kotlinx.coroutines.launch
-
-// 5 Import for the JSON encoder
-
-// 6 Imports for extracting FHIR resources
-</code></pre>
 <p>If you would rather jump to a working version, type <code>step 4</code> in the <strong>Terminal</strong> tab.</p>
 <p>A questionnaire isn't very helpful if you can't see the answers that users input though. Let's go
 on to the next step of getting a Questionnaire Response!</p>
