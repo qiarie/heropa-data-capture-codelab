@@ -55,10 +55,8 @@ paste. If you haven't built a Kotlin Multiplatform app before, you can start by
      Editor password   4827
      App               https://203-0-113-10.sslip.io/preview/
 
-     Scan a code with a phone or tablet camera to open that address there.
-
-     Editor                               App
-     [QR code]                            [QR code]
+     Scan the QR code to preview the app on your phone
+     [QR code]
 
    First steps
      1. Open the Editor address and enter the password.
@@ -72,7 +70,7 @@ paste. If you haven't built a Kotlin Multiplatform app before, you can start by
 
 **The addresses and password in this manual are examples only.** Wherever you see `203-0-113-10.sslip.io`, `203.0.113.10` or the password `4827`, use the values from your own summary instead. Your addresses and password are your own. You can get them back at any time, and the section **Find your addresses again** below explains how.
 
-Where the example shows `[QR code]`, your terminal draws two real QR codes, one for the Editor and one for the App. Scan a code with the camera of a phone or tablet to open that address there without typing it. The Editor still asks for the password. The start page of your lab, which is the address with nothing after the name, shows the App code as well. Do the codelab itself on a computer, because the Editor needs a keyboard and a wide screen. The App on a phone is for a look only. What it prints does not reach the Output tab on your computer. If the codes look like broken characters in your terminal, ignore them and type the addresses.
+Where the example shows `[QR code]`, your terminal draws a real QR code for the App. Scan it with the camera of a phone or tablet to open the App there without typing the address. The start page of your lab, which is the address with nothing after the name, shows the same code. The App on a phone is for a look only. What it prints does not reach the Output tab on your computer. If the code looks like broken characters in your terminal, ignore it and type the address.
 
 ### Open the editor and the app
 
