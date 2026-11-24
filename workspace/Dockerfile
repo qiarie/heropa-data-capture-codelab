@@ -41,6 +41,11 @@ ENV CODELAB_DIR=/home/learner/kotlin-fhir-data-capture/codelabs
 # because Android Studio adds those. Three numbered comments are put under the
 # import group so a learner can see where each step's imports go. The change
 # is committed, so the checkout is clean and step reset returns to it.
+#
+# The same commit turns on incremental Wasm builds in gradle.properties. A
+# build after a small edit then rebuilds only what the edit changed. Kotlin
+# marks the switch as experimental, so remove that line if a build ever gives
+# a stale app.
 RUN git init -q -b codelab kotlin-fhir-data-capture \
  && cd kotlin-fhir-data-capture \
  && git remote add origin "$CODELAB_REPO" \
@@ -49,8 +54,9 @@ RUN git init -q -b codelab kotlin-fhir-data-capture \
  && git reset -q --hard FETCH_HEAD \
  && printf '.vscode/\n' >> .git/info/exclude \
  && cp /opt/codelab/solutions/starter/App.kt codelabs/shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt \
+ && printf '\n# Added by the lab. Rebuilds only what an edit changed.\nkotlin.incremental.wasm=true\n' >> codelabs/gradle.properties \
  && git -c user.name="Codelab lab" -c user.email="lab@localhost" \
-      commit -q -a -m "Add numbered import markers to App.kt"
+      commit -q -a -m "Adapt the starter for the lab"
 
 # Warm the Gradle cache. The finished codelab is built first so the library
 # from step 3 and everything it pulls in are already downloaded. The starter is

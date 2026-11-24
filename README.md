@@ -69,6 +69,8 @@ The editor colours Kotlin but has no code completion, no import prompts and no e
 | `fix-imports` | Adds the imports the code in `App.kt` needs and removes the wrong `Questionnaire` import. A **Fix imports** button in the status bar runs it. |
 | `step N` | Replaces both files with a working version of step N. |
 
+The image build also adds one build setting, `kotlin.incremental.wasm=true`, to `codelabs/gradle.properties`, in the same commit as the numbered import comments. A build after a small edit then rebuilds only what the edit changed. Kotlin 2.3.21 marks the setting as experimental. If a build ever leaves a stale app in the App tab, remove that line from the image build in `workspace/Dockerfile` and build the image again.
+
 The most common mistake is importing `dev.ohs.fhir.model.r4.Questionnaire` in step 4. The form and the FHIR model class share that name, and Android Studio would have offered the choice. The manual has an exercise on this, named "What this editor does not do for you".
 
 ## Repository layout
