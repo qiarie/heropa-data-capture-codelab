@@ -1,0 +1,95 @@
+<h2>Troubleshooting</h2>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Symptom</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">You saved a file and the Build log shows no new build</td>
+<td style="border: 1px solid #333; padding: 8px;">Check the file's tab for a white dot, which means it is not saved yet. Then click <strong>Build now</strong> at the very bottom of the Editor, or type <code>build</code> in the <strong>Terminal</strong> tab.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The App tab says the app is still building</td>
+<td style="border: 1px solid #333; padding: 8px;">Wait for <code>BUILD OK</code> in the Build log. The page reloads automatically.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The App tab did not change after a build</td>
+<td style="border: 1px solid #333; padding: 8px;">Check that <strong>Auto refresh</strong> is ticked, or click <strong>Refresh</strong>. If it still shows the old version, check that the Build log says <code>BUILD OK</code> and not <code>BUILD FAILED</code>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Unresolved reference</code> in the Build log</td>
+<td style="border: 1px solid #333; padding: 8px;">An import is missing or misspelled. Click <strong>Fix imports</strong>, or compare your imports with the ones the step gives.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>No parameter with name 'questionnaireJson' found</code> or <code>No value passed for parameter 'status'</code></td>
+<td style="border: 1px solid #333; padding: 8px;"><code>App.kt</code> imports the wrong <code>Questionnaire</code>. Delete <code>import dev.ohs.fhir.model.r4.Questionnaire</code>, add <code>import dev.ohs.fhir.datacapture.Questionnaire</code>, or click <strong>Fix imports</strong>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Conflicting import</code> or <code>Overload resolution ambiguity</code> on <code>Questionnaire</code></td>
+<td style="border: 1px solid #333; padding: 8px;">The import in step 6 needs <code>as FhirQuestionnaire</code> at the end.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Unresolved reference 'datacapture'</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Step 3 is not done or not saved. Check the line in <code>shared/build.gradle.kts</code>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Unresolved reference 'Alignment'</code></td>
+<td style="border: 1px solid #333; padding: 8px;">The <code>Hello World!</code> line is still in the file. Step 4 replaces it.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Unresolved reference 'json'</code></td>
+<td style="border: 1px solid #333; padding: 8px;">The <code>// 5.1</code> code is missing. It creates the value that the <code>// 5.2</code> and <code>// 6</code> code use.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Expecting</code> or <code>Syntax error</code></td>
+<td style="border: 1px solid #333; padding: 8px;">A bracket, brace or quote is missing or extra near the line number in the error.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The App tab is blank</td>
+<td style="border: 1px solid #333; padding: 8px;">Your browser is too old for this app. Use a current Chrome, Edge, Firefox or Safari.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Nothing appears in the Output tab</td>
+<td style="border: 1px solid #333; padding: 8px;">Click <strong>Submit</strong> again after the app has reloaded. Step 5 must be built for anything to print. The App tab and the Editor must also be open in the same browser, because the output travels between them through that browser.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The Guide, Build log or Output area is gone</td>
+<td style="border: 1px solid #333; padding: 8px;">Click its name in the bar at the very bottom of the Editor.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Open app</strong> does nothing</td>
+<td style="border: 1px solid #333; padding: 8px;">The browser blocked the new tab. Allow pop-ups for the lab address, or open the <strong>App</strong> address that <code>./lab-init.sh</code> printed.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The code is in a state you cannot fix</td>
+<td style="border: 1px solid #333; padding: 8px;">Type <code>step reset</code> in the <strong>Terminal</strong> tab, or <code>step</code> with the number of the last step you finished.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The Editor asks for the password again</td>
+<td style="border: 1px solid #333; padding: 8px;">Run <code>./lab-init.sh --info</code> in the Heropa terminal. It prints the same password without restarting anything.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">You came back and the tabs do not load</td>
+<td style="border: 1px solid #333; padding: 8px;">The VM was stopped. Start it in Heropa, wait a minute and reload the tabs. If they still do not load, run <code>./lab-init.sh</code> in its terminal and read <strong>Since the last run</strong> in what it prints. When that says <code>CHANGED</code>, open the new addresses. See <em>Find your addresses again</em>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The Editor or App address stopped working</td>
+<td style="border: 1px solid #333; padding: 8px;">The same cause and the same fix as the row above.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">You lost the addresses or the password</td>
+<td style="border: 1px solid #333; padding: 8px;">Run <code>./lab-init.sh --info</code> in the Heropa terminal. It prints them again.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The browser warns that the connection is not private</td>
+<td style="border: 1px solid #333; padding: 8px;">The lab is in reduced mode. Click <strong>Advanced</strong>, then <strong>Proceed</strong>. See <em>If the lab starts in reduced mode</em>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The Editor shows a notice about reduced mode, or has no Guide, Build log or Output area</td>
+<td style="border: 1px solid #333; padding: 8px;">The lab could not get a trusted certificate. Use the pages listed under <em>If the lab starts in reduced mode</em>, and run <code>./lab-init.sh</code> again later.</td>
+</tr>
+</tbody>
+</table>

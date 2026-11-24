@@ -1,0 +1,960 @@
+<h1>Capture and process health data with Kotlin FHIR Data Capture</h1>
+<p>This guide takes you through the codelab on the Heropa lab, where you write the code in an editor in your browser and the app runs as a web page. You install nothing.</p>
+<p>It is built on the <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published codelab</a>, which was written for Android Studio on your own computer. This guide covers the lab only. If you would rather work in Android Studio, follow the <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published codelab</a> instead of this guide.</p>
+<p>The codelab text comes from the <a href="https://github.com/ohs-foundation/kotlin-fhir-data-capture">Kotlin FHIR Data Capture</a> project under <code>codelabs</code> directory and is used under the Apache License 2.0.</p>
+<h2>1. Before you begin</h2>
+<h3>What you'll build</h3>
+<p>In this codelab, you're going to build a Kotlin Multiplatform app with the Kotlin FHIR Data
+Capture library. Your app will use the library to render and process FHIR Questionnaires and
+responses. The same code runs on Android, iOS, Desktop (JVM) and Web (Wasm and JS).</p>
+<h3>What you'll learn</h3>
+<ul>
+<li>How to integrate Kotlin FHIR Data Capture into your Kotlin Multiplatform application</li>
+<li>How to display a Questionnaire</li>
+<li>How to get answers as a QuestionnaireResponse</li>
+<li>How to extract FHIR resources from a QuestionnaireResponse</li>
+</ul>
+<h3>What you'll need</h3>
+<p>On the lab you need only a recent version of Chrome, Edge, Firefox or Safari. The app uses WebAssembly features that older browsers lack.</p>
+<p>You do not need to know Kotlin. Every change is given in full, and this guide says exactly which file to open and where to put each line.</p>
+<p>This codelab is focused on
+<a href="https://github.com/ohs-foundation/kotlin-fhir-data-capture">Kotlin FHIR Data Capture</a>.
+Non-relevant concepts and code blocks are glossed over and are provided for you to simply copy and
+paste. If you haven't built a Kotlin Multiplatform app before, you can start by
+<a href="https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform-create-first-app.html">creating your first Compose Multiplatform app</a>.</p>
+<h2>2. Get set up</h2>
+<h3>Start your lab</h3>
+<ol>
+<li>
+<p>Open the terminal of your lab VM in Heropa.</p>
+</li>
+<li>
+<p>Start the lab.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">cd ~/sdc-codelab
+./lab-init.sh
+</code></pre>
+</li>
+<li>
+<p>Wait about a minute. The command ends with a summary like the example below. The addresses and the password in the example are placeholders and do not work. Use the ones your own terminal prints.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">------------------------------------------------------------------------
+The lab is ready. Open these in the browser on your own computer.
+
+  Editor            https://203-0-113-10.sslip.io/ide/
+  Editor password   4827
+  App               https://203-0-113-10.sslip.io/preview/
+
+  Scan a code with a phone or tablet camera to open that address there.
+
+  Editor                               App
+  [QR code]                            [QR code]
+
+First steps
+  1. Open the Editor address and enter the password.
+  2. Click Open app at the very bottom of the Editor. The app opens in a
+     second tab.
+
+Lost these details? Run ./lab-init.sh --info to print them again.
+The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
+------------------------------------------------------------------------
+</code></pre>
+</li>
+</ol>
+<p style="border-left: 4px solid #e0a800; background: #fff8e1; padding: 8px 12px;"><strong>The addresses and password in this manual are examples only.</strong> Wherever you see <code>203-0-113-10.sslip.io</code>, <code>203.0.113.10</code> or the password <code>4827</code>, use the values from your own summary instead. Your addresses and password are your own. You can get them back at any time, and the section <em>Find your addresses again</em> below explains how.</p>
+<p>Where the example shows <code>[QR code]</code>, your terminal draws two real QR codes, one for the Editor and one for the App. Scan a code with the camera of a phone or tablet to open that address there without typing it. The Editor still asks for the password. The start page of your lab, which is the address with nothing after the name, shows the App code as well. Do the codelab itself on a computer, because the Editor needs a keyboard and a wide screen. The App on a phone is for a look only. What it prints does not reach the Output tab on your computer. If the codes look like broken characters in your terminal, ignore them and type the addresses.</p>
+<h3>Open the editor and the app</h3>
+<p>You work in two browser tabs, one for the Editor and one for the App.</p>
+<ol>
+<li>Open the <strong>Editor</strong> address in a new tab. Type the editor password, which is a code of four digits, and press <strong>Submit</strong>. If the summary shows <code>none needed</code> instead of a password, the Editor opens without asking.</li>
+<li>In the bar at the very bottom of the Editor, click <strong>Open app</strong>. The app opens in a second tab. If your browser blocks the new tab, allow it, or open the <strong>App</strong> address yourself.</li>
+</ol>
+<p>If you have room, put the two tabs side by side in separate windows.</p>
+<p>The Editor tab has six areas. The last three share the space under the code, and you switch between them by clicking their tabs.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Area</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Where</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it is for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Explorer</td>
+<td style="border: 1px solid #333; padding: 8px;">Far left</td>
+<td style="border: 1px solid #333; padding: 8px;">The project files</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Code</td>
+<td style="border: 1px solid #333; padding: 8px;">Top centre</td>
+<td style="border: 1px solid #333; padding: 8px;">The file you are changing</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Build log</td>
+<td style="border: 1px solid #333; padding: 8px;">Bottom centre</td>
+<td style="border: 1px solid #333; padding: 8px;">Shows each build and whether it worked</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Output</td>
+<td style="border: 1px solid #333; padding: 8px;">Bottom centre, the tab next to Build log</td>
+<td style="border: 1px solid #333; padding: 8px;">Shows what the app prints when you click <strong>Submit</strong>. You read the JSON here in steps 5 and 6.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Terminal</td>
+<td style="border: 1px solid #333; padding: 8px;">Bottom centre, the tab next to Output</td>
+<td style="border: 1px solid #333; padding: 8px;">For typing commands</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Guide</td>
+<td style="border: 1px solid #333; padding: 8px;">Right</td>
+<td style="border: 1px solid #333; padding: 8px;">This guide</td>
+</tr>
+</tbody>
+</table>
+<p>You can drag the borders between the areas to resize them. The bar at the very bottom has six buttons.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Button</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Open app</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Opens the App tab</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Build now</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Saves every open file and builds the app straight away. You rarely need it, because saving a file starts a build automatically.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Guide</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Brings the Guide back if you closed it</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Build log</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Brings the Build log back if you closed it</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Output</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Brings the Output tab back if you closed it</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Fix imports</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Adds the import lines your code needs. A later part explains imports.</td>
+</tr>
+</tbody>
+</table>
+<p>The App tab has a bar along the top and a strip along the bottom.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Control</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Status dot</td>
+<td style="border: 1px solid #333; padding: 8px;">Green when the app matches your code, amber while a build runs, red when the last build failed</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Auto refresh</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">When ticked, the app reloads automatically after every successful build</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Refresh</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Reloads the app now</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Output</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">The strip along the bottom, which shows whatever the app prints. The Output tab in the Editor shows the same thing.</td>
+</tr>
+</tbody>
+</table>
+<h3>Find your addresses again</h3>
+<p>Come here when you return to the lab after a break, when the Editor or App tab stops loading, or when you have lost the addresses or the password.</p>
+<p>The lab VM stops when you close the course, when you stop it yourself, and when it sits idle for a while. Your code stays on it. The VM is set up to keep the same IP address, so the same addresses normally work again once it is running.</p>
+<ol>
+<li>
+<p>Open the course in Heropa and start the VM if it is stopped. Give it a minute.</p>
+</li>
+<li>
+<p>Reload the Editor and App tabs. If they load, you are done.</p>
+</li>
+<li>
+<p>If they do not load, or you no longer have the addresses, open the terminal of the VM and run the same two commands as before.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">cd ~/sdc-codelab
+./lab-init.sh
+</code></pre>
+</li>
+<li>
+<p>Read the summary it prints. The lines under <strong>Since the last run</strong> tell you what to do.</p>
+</li>
+</ol>
+<p>When the address is the same, the summary says so. Reload your tabs, or open the addresses again.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">Since the last run
+  Address    The same as before. Tabs you still have open work again after
+             a reload.
+  Password   The same as before.
+  Your code  Kept as you left it.
+</code></pre>
+<p>When the VM came back with a different IP address, the summary says <code>CHANGED</code> and shows the old address. The address in this example is a placeholder. Close the old Editor and App tabs, because they no longer work, and so do bookmarks to them. Open the new <strong>Editor</strong> address from the top of the summary, enter the password, and click <strong>Open app</strong>.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">Since the last run
+  Address    CHANGED. It was https://203-0-113-10.sslip.io
+             Close the old Editor and App tabs. They no longer work. Open
+             the two addresses above.
+  Password   The same as before.
+  Your code  Kept as you left it.
+</code></pre>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">After the VM restarts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Editor and App addresses</td>
+<td style="border: 1px solid #333; padding: 8px;">Normally the same. The summary says <code>CHANGED</code> when they are not.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Editor password</td>
+<td style="border: 1px solid #333; padding: 8px;">Always the same</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Your code</td>
+<td style="border: 1px solid #333; padding: 8px;">Always kept as you left it</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Build log and Output</td>
+<td style="border: 1px solid #333; padding: 8px;">Start empty, and fill again at the next build and the next <strong>Submit</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The command is safe to run at any time and as often as you like. It changes nothing when the address is the same. When the address changed it takes about a minute, because it gets a certificate for the new address.</p>
+<p>Always copy the addresses from the summary. They are made from the IP address of the VM, normally with dashes instead of dots and <code>.sslip.io</code> at the end, so an example IP of <code>203.0.113.10</code> would give <code>https://203-0-113-10.sslip.io/ide/</code>. Sometimes the summary shows the plain IP, such as <code>https://203.0.113.10/ide/</code>, with a note that says why. Those addresses work in exactly the same way.</p>
+<h3>If the lab starts in reduced mode</h3>
+<p>The Editor needs a certificate that your browser trusts. The lab asks for one each time the address changes. Occasionally it cannot get one, usually because the service that issues them is over its limit. The lab then makes its own certificate and starts in <strong>reduced mode</strong>, and the summary from <code>./lab-init.sh</code> opens with the words <code>REDUCED MODE</code>. It also gives the reason, the pages to use, and when to try again.</p>
+<p>Your code, the build and the app all work in reduced mode. Two things are different.</p>
+<ol>
+<li>Your browser shows a warning page the first time you open the Editor address. Click <strong>Advanced</strong>, then <strong>Proceed</strong>. You do this once. The warning appears because the lab made its own certificate, and it is expected here.</li>
+<li>The Editor has no Guide, Build log or Output area, because browsers block them on a certificate they do not trust. A notice in the Editor says so. Use these in their place.</li>
+</ol>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">In full mode</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">In reduced mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Guide area in the Editor</td>
+<td style="border: 1px solid #333; padding: 8px;">This manual in Heropa. The <strong>Guide</strong> button also opens it in the Editor as plain text.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Build log area in the Editor</td>
+<td style="border: 1px solid #333; padding: 8px;">The <strong>Build log</strong> address that <code>./lab-init.sh</code> prints, in a separate browser tab. The <strong>Build log</strong> button opens it.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Output area in the Editor</td>
+<td style="border: 1px solid #333; padding: 8px;">The <strong>Output</strong> strip along the bottom of the App tab</td>
+</tr>
+</tbody>
+</table>
+<p>Everything else in this manual applies as written. Where a step says to look at the Build log or the Output tab, look at the page from the table.</p>
+<p>To get back to full mode, run <code>./lab-init.sh</code> again later. When it was refused for being over a limit, the summary gives the time to try again under <strong>To get full mode</strong>. That run asks for a certificate again and puts the lab back in full mode when it gets one. The addresses may change when that happens, so open the ones it prints.</p>
+<h3>Download the Code</h3>
+<p>There is nothing to download on the lab. The code is already there, and the Editor opens on the <code>codelabs</code> folder. The Explorer on the left shows what is inside it.</p>
+<h3>Project structure</h3>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Module</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>shared</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Kotlin Multiplatform module. <code>commonMain</code> holds the <code>App()</code> composable and the questionnaire.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>androidApp</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Android application. <code>MainActivity</code> calls <code>setContent { App() }</code>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>desktopApp</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Desktop (JVM) application. <code>main()</code> opens a window that shows <code>App()</code>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>webApp</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Web application for Wasm and JS. <code>main()</code> shows <code>App()</code> in the browser page.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>iosApp</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Xcode project for iOS. It shows <code>App()</code> through <code>MainViewController()</code> in <code>shared/iosMain</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The platform modules are just entry points. Everything you'll write in this codelab goes into two
+files of the <code>shared</code> module:</p>
+<ul>
+<li><code>shared/build.gradle.kts</code></li>
+<li><code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code></li>
+</ul>
+<p>Each place you'll change is marked with a numbered comment, such as
+<code>// 4 Replace with code from the codelab to display the questionnaire.</code> The number tells you which
+step of the codelab adds the code.</p>
+<p>The questionnaire is stored as a
+<a href="https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform-resources.html">Compose Multiplatform resource</a>
+at <code>shared/src/commonMain/composeResources/files/questionnaire.json</code>, so every platform can read it.</p>
+<p>A path such as <code>shared/build.gradle.kts</code> tells you which folders to open in the Explorer, from left to right. Click a folder to open it, and click a file to show it in the Code area.</p>
+<h4>To open <code>shared/build.gradle.kts</code></h4>
+<ol>
+<li>In the Explorer, click the <code>shared</code> folder to open it.</li>
+<li>Click the <code>build.gradle.kts</code> file that sits inside <code>shared</code>.</li>
+</ol>
+<p>The project has two files named <code>build.gradle.kts</code>. The other one sits lower in the Explorer, outside every folder, and it is the wrong one. Check the line of small text above the code. It must read <code>shared &gt; build.gradle.kts</code>.</p>
+<h4>To open <code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code></h4>
+<p>This file is already open when the Editor starts. If you closed it, open <code>shared</code>, then <code>src</code>, then <code>commonMain</code>, then the folder shown as <code>kotlin/dev/ohs/fhir/codelab</code>, and click <code>App.kt</code>.</p>
+<h3>Import the app into Android Studio</h3>
+<p>There is nothing to import on the lab. The Editor tab takes the place of Android Studio, and the project is already open in it.</p>
+<h3>Run the starter app</h3>
+<p>The starter app is already running on the lab as a web page. Look at the App tab, which shows a purple bar and the words <strong>Hello World!</strong></p>
+<p>As you can see there isn't much here yet, so let's get right into displaying a questionnaire in
+your app!</p>
+<p>The picture below shows the same app on an Android phone.</p>
+<p><img src="https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image3.png" alt="The Hello World app on an Android phone" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /></p>
+<h3>Run the app on other platforms</h3>
+<p>The lab runs the Web (Wasm) version of the app. You do not type any command. The lab builds the app automatically every time you save a file, as the next part explains.</p>
+<p>The app is built with Kotlin Multiplatform, so the same code also runs on Android, iOS and Desktop. The <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published codelab</a> shows how to run it on each of them.</p>
+<h3>How to run the app</h3>
+<p>You do the same four things for every step of the codelab.</p>
+<ol>
+<li>Change a file in the Code area.</li>
+<li>Save it with Ctrl+S, or Cmd+S on a Mac. Saving starts a build.</li>
+<li>Watch the Build log under the code. It prints <code>Building the app</code> and then, after up to a minute, <code>BUILD OK</code>.</li>
+<li>Switch to the App tab. It has reloaded automatically and shows the new version.</li>
+</ol>
+<p style="border-left: 4px solid #4a90d9; background: #eef5fc; padding: 8px 12px;"><strong>Builds are automatic.</strong> The lab watches the project files. Every time you save one, it builds the app again and the App tab reloads. There is no Run button to press and no command to type. A change you have not saved is not built. A white dot on a file's tab marks unsaved changes, so while you see it the app does not have that change yet.</p>
+<p>If you save again while a build is running, the lab finishes that build and then runs one more, so your latest change is never missed.</p>
+<h3>Start a build yourself</h3>
+<p>You rarely need to, but you can start a build without changing a file. Do this when you are not sure a build ran, when the Build log shows nothing new after a save, or when you want to see the result of the last build again.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Way</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Button</td>
+<td style="border: 1px solid #333; padding: 8px;">Click <strong>Build now</strong> in the bar at the very bottom of the Editor. It saves every open file first, then builds.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Command</td>
+<td style="border: 1px solid #333; padding: 8px;">Click the <strong>Terminal</strong> tab, type <code>build</code> and press Enter. This builds the files as they were last saved.</td>
+</tr>
+</tbody>
+</table>
+<p>Either way, the build appears in the Build log like any other, and ends with <code>BUILD OK</code> or <code>BUILD FAILED</code>. When nothing changed since the last build, it finishes in a few seconds.</p>
+<h3>When a build fails</h3>
+<p>If the Build log prints <code>BUILD FAILED</code>, look just above it for lines that start with <code>e</code>. Each one names the file, the line number and the problem. Under them, a <strong>What to do</strong> list explains the common ones in plain words. Fix the file and save again. The App tab keeps showing the last version that worked.</p>
+<h3>If you have used Android Studio</h3>
+<p>This table shows what takes the place of each thing you know.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">In Android Studio</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">On the lab</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Open Android Studio</td>
+<td style="border: 1px solid #333; padding: 8px;">Use the Editor tab</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Click <strong>Run</strong> in the Android Studio toolbar</td>
+<td style="border: 1px solid #333; padding: 8px;">Save the file, wait for <code>BUILD OK</code>, look at the App tab. <strong>Build now</strong> does the same without a change.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Select <strong>Sync Project with Gradle Files</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Save the file. Saving does the sync.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Search Logcat</td>
+<td style="border: 1px solid #333; padding: 8px;">Read the <strong>Output</strong> tab in the Editor, next to the Build log</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Tap <strong>Submit</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Click <strong>Submit</strong></td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Android Studio prompts you to add the necessary imports</td>
+<td style="border: 1px solid #333; padding: 8px;">Paste the import lines yourself, under the numbered comment the step names</td>
+</tr>
+</tbody>
+</table>
+<h3>What this editor does not do for you</h3>
+<p>The web editor is simpler than Android Studio, which quietly does several jobs as you type. Read this once, because it explains most of the errors people hit.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Android Studio does this</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">On the lab</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Offers to add an import when you paste code</td>
+<td style="border: 1px solid #333; padding: 8px;">You add each import line yourself</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Picks between two classes with the same name</td>
+<td style="border: 1px solid #333; padding: 8px;">You must use the exact import line from the step</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Underlines mistakes in red as you type</td>
+<td style="border: 1px solid #333; padding: 8px;">Nothing is underlined. Mistakes show in the Build log after you save.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Completes names as you type</td>
+<td style="border: 1px solid #333; padding: 8px;">No completion. Copy and paste the code.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Tidies indentation and removes unused imports</td>
+<td style="border: 1px solid #333; padding: 8px;">Nothing is tidied. Indentation does not affect the build, and an unused import is harmless.</td>
+</tr>
+</tbody>
+</table>
+<h4>What an import is</h4>
+<p>Code refers to things by short names, such as <code>Questionnaire</code>. An import line says which library a short name comes from. If the import is missing, the build fails with <code>Unresolved reference</code>.</p>
+<h4>Where import lines go</h4>
+<p>All import lines sit together near the top of <code>App.kt</code>, each starting with the word <code>import</code>. In the starter code they run from line 18 to line 50. Right under them, the lab has put one numbered comment for each step that needs imports.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">import org.jetbrains.compose.resources.stringResource
+
+// 4 Imports for the Questionnaire composable
+
+// 5 Import for the JSON encoder
+
+// 6 Imports for extracting FHIR resources
+</code></pre>
+<p>Each step tells you which of these comments to paste its imports under. You never have to hunt for the right spot. The order of import lines does not matter.</p>
+<h4>One name, two meanings</h4>
+<p>Two different things in this codelab are both called <code>Questionnaire</code>.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Import line</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it is</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Used in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>import dev.ohs.fhir.datacapture.Questionnaire</code></td>
+<td style="border: 1px solid #333; padding: 8px;">The form that appears on screen</td>
+<td style="border: 1px solid #333; padding: 8px;">Step 4</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>import dev.ohs.fhir.model.r4.Questionnaire as FhirQuestionnaire</code></td>
+<td style="border: 1px solid #333; padding: 8px;">The FHIR data behind the form, given a second name so the two do not clash</td>
+<td style="border: 1px solid #333; padding: 8px;">Step 6</td>
+</tr>
+</tbody>
+</table>
+<p>If <code>App.kt</code> imports <code>dev.ohs.fhir.model.r4.Questionnaire</code> without the <code>as FhirQuestionnaire</code> ending, the build fails with <code>No parameter with name 'questionnaireJson' found</code>. Delete that line and use the two lines above.</p>
+<h4>Help when you are stuck</h4>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Help</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Fix imports</strong> button, at the bottom of the Editor</td>
+<td style="border: 1px solid #333; padding: 8px;">Adds every import the code in <code>App.kt</code> needs and removes the wrong <code>Questionnaire</code> import. This is the closest thing to what Android Studio does.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>step 3</code>, <code>step 4</code>, <code>step 5</code> or <code>step 6</code>, typed in the <strong>Terminal</strong> tab</td>
+<td style="border: 1px solid #333; padding: 8px;">Replaces both files with a working version of the code as it stands at the end of that step</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>step reset</code>, typed in the <strong>Terminal</strong> tab</td>
+<td style="border: 1px solid #333; padding: 8px;">Puts both files back to the starter code</td>
+</tr>
+</tbody>
+</table>
+<p>Your own files are copied to the <code>backups</code> folder in your home folder before any of these change them.</p>
+<h2>3. Add Kotlin FHIR Data Capture to the project</h2>
+<h3>Add the dependency for Kotlin FHIR Data Capture</h3>
+<p>The Kotlin FHIR Data Capture dependency allows you to integrate the library in your app. Add the
+following line below the <code>// 3 Add the dependency for Kotlin FHIR Data Capture</code> comment in the
+<code>commonMain</code> dependencies of the <code>shared/build.gradle.kts</code> file:</p>
+<p>Do this in the Editor tab.</p>
+<ol>
+<li>
+<p>Open <code>shared/build.gradle.kts</code>. In the Explorer, click the <code>shared</code> folder, then the <code>build.gradle.kts</code> file inside it. The line of small text above the code must read <code>shared &gt; build.gradle.kts</code>.</p>
+</li>
+<li>
+<p>Find the comment <code>// 3 Add the dependency for Kotlin FHIR Data Capture</code>. It is on line 46.</p>
+</li>
+<li>
+<p>Click at the end of that comment line and press Enter to make a new line under it.</p>
+</li>
+<li>
+<p>Paste this one line.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">implementation(&quot;dev.ohs.fhir:fhir-data-capture:2.0.0-alpha05&quot;)
+</code></pre>
+</li>
+<li>
+<p>Check your change against the block below, which shows the new line in its place. The <code>// ...</code> line stands for the lines that are already in the file. You do not paste this block.</p>
+</li>
+</ol>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">kotlin {
+  sourceSets {
+    commonMain.dependencies {
+      // ...
+
+      // 3 Add the dependency for Kotlin FHIR Data Capture
+      implementation(&quot;dev.ohs.fhir:fhir-data-capture:2.0.0-alpha05&quot;)
+    }
+  }
+}
+</code></pre>
+<p>Because the dependency is in <code>commonMain</code>, Gradle picks the right artifact for each target
+platform. The <code>androidApp</code>, <code>desktopApp</code> and <code>webApp</code> modules get the library through their
+dependency on <code>shared</code>.</p>
+<p>The starter project already includes the <a href="https://github.com/ohs-foundation/kotlin-fhir">Kotlin FHIR</a>
+model and <code>kotlinx-serialization-json</code>, which you'll use later in the codelab.</p>
+<h3>Sync your project with Gradle files</h3>
+<p>On the lab, saving the file does the job of the <strong>Sync Project with Gradle Files</strong> button in Android Studio.</p>
+<ol>
+<li>Save <code>shared/build.gradle.kts</code> with Ctrl+S, or Cmd+S on a Mac.</li>
+<li>Watch the Build log until it prints <code>BUILD OK</code>. This build takes two to three minutes, because the whole library is compiled into the app for the first time.</li>
+</ol>
+<p>The App tab looks the same after this step, because nothing uses the library yet.</p>
+<h2>4. Display a Questionnaire</h2>
+<p>In this step, you will add the functionality to the starter app to render a questionnaire with the
+<code>Questionnaire</code> composable.</p>
+<p>Open <code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code>. The <code>App()</code> composable already
+reads the questionnaire JSON from the resources into <code>questionnaireJson</code>, and creates a coroutine
+<code>scope</code> that you'll use later in this step:</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">var questionnaireJson by remember { mutableStateOf&lt;String?&gt;(null) }
+LaunchedEffect(Unit) {
+  questionnaireJson = Res.readBytes(&quot;files/questionnaire.json&quot;).decodeToString()
+}
+val scope = rememberCoroutineScope()
+</code></pre>
+<p>Start with the three imports this step needs. The web editor does not add imports for you, so you paste them in yourself, before any other code.</p>
+<ol>
+<li>
+<p>Go to <code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code>. It is the other tab in the Code area.</p>
+</li>
+<li>
+<p>Find the <code>// 4 Imports for the Questionnaire composable</code> comment. It is on line 52, just under the import lines. You can also press Ctrl+F and type <code>// 4 Imports</code>.</p>
+</li>
+<li>
+<p>Replace that comment with the following code. The first line puts the comment back, so the imports end up right under it.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 4 Imports for the Questionnaire composable
+import dev.ohs.fhir.datacapture.Questionnaire
+import dev.ohs.fhir.datacapture.QuestionnaireConfig
+import kotlinx.coroutines.launch
+</code></pre>
+</li>
+</ol>
+<p>The <code>// 4 Imports</code> comment is not in the published codelab. The lab adds it to the starter code to mark the place.</p>
+<p>Copy the lines exactly. The first import is the form, and it must come from <code>datacapture</code>. A different class, <code>dev.ohs.fhir.model.r4.Questionnaire</code>, has the same short name and breaks this step.</p>
+<h3>Step 1: Add the Questionnaire composable</h3>
+<p>The <code>Questionnaire</code> composable requires a JSON encoded FHIR Questionnaire for it to render.</p>
+<p>You can look at the <code>questionnaire.json</code> file if you want, but one of the benefits of Kotlin FHIR
+Data Capture is that you don't need to know the structure of the FHIR Questionnaire (or anything
+about FHIR) to get it to render it! You'll look more closely at this file later in the codelab.</p>
+<p>The three steps below make this change. These notes tell you where each thing they name is.</p>
+<ul>
+<li>The comment <code>// 4 Replace with code from the codelab to display the questionnaire.</code> is inside <code>App()</code>, near line 83 now that the imports are in. Press Ctrl+F and type <code>// 4 Replace</code> to jump to it. Just under it is the line that starts with <code>Text(text = &quot;Hello World!&quot;</code>.</li>
+<li>Select both of those lines, delete them and paste the block from step 3 where they were. The new block starts with its own numbered comment, <code>// 4 Display the questionnaire</code>.</li>
+<li>The <code>androidx.compose.ui.Alignment</code> import is in the import group near the top of the file, on the line <code>import androidx.compose.ui.Alignment</code>. Deleting it is optional. An unused import does no harm.</li>
+</ul>
+<ol>
+<li>
+<p>Find the <code>// 4 Replace with code from the codelab to display the questionnaire.</code> comment in
+<code>App()</code>.</p>
+</li>
+<li>
+<p>You don't need the <code>Hello World!</code> text, so delete the <code>Text(...)</code> line below the comment. You
+can also delete the <code>androidx.compose.ui.Alignment</code> import, which is no longer used.</p>
+</li>
+<li>
+<p>Add the following code in its place:</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 4 Display the questionnaire
+questionnaireJson?.let { questionnaireJson -&gt;
+  Questionnaire(
+    questionnaireJson = questionnaireJson,
+    config = QuestionnaireConfig(showCancelButton = false),
+    onSubmit = {},
+    onCancel = {},
+  )
+}
+</code></pre>
+</li>
+</ol>
+<p>The questionnaire is shown as soon as <code>questionnaireJson</code> has been read. <code>QuestionnaireConfig</code> lets
+you customize how the questionnaire is displayed. Here it hides the <strong>Cancel</strong> button, so only the
+<strong>Submit</strong> button is shown, and <code>onCancel</code> can be left empty.</p>
+<p>Now run it. Save <code>App.kt</code> with Ctrl+S, wait for <code>BUILD OK</code> in the Build log, then look at the App tab. It shows the questionnaire as a form.</p>
+<p>The picture below shows the same form on an Android phone.</p>
+<p><img src="https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image2.png" alt="The questionnaire shown as a form on an Android phone" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /></p>
+<p>If the Build log prints <code>BUILD FAILED</code>, read the <strong>What to do</strong> list under the errors, or click <strong>Fix imports</strong> at the bottom of the Editor.</p>
+<p>Navigate through the questionnaire and try entering some answers. There are a few different answer
+widgets used, including text fields and a date picker, which were automatically rendered based on
+the underlying type in the original FHIR questionnaire.</p>
+<p><em>Technically, that's all you need to do to render a questionnaire! Congratulations!</em></p>
+<h3>Step 2: Handle the Submit button</h3>
+<p>At the moment nothing happens when you tap <strong>Submit</strong>. The library calls <code>onSubmit</code> when the
+button is tapped, so replace <code>onSubmit = {},</code> with the following code:</p>
+<ol>
+<li>
+<p>Find the line <code>onSubmit = {},</code>. It is inside the block you pasted in Step 1, four lines under the <code>// 4 Display the questionnaire</code> comment. Press Ctrl+F and type <code>onSubmit</code> to jump to it. This piece of code does not have its own numbered comment.</p>
+</li>
+<li>
+<p>Replace that one line with these five lines. Leave the <code>onCancel = {},</code> line under it in place.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">onSubmit = { getQuestionnaireResponse -&gt;
+  // getQuestionnaireResponse() validates the answers first. If validation fails, the
+  // library shows an error dialog and cancels this coroutine.
+  scope.launch { submitQuestionnaire(questionnaireJson, getQuestionnaireResponse()) }
+},
+</code></pre>
+</li>
+</ol>
+<p>The new code uses <code>launch</code>, which is why you added the <code>kotlinx.coroutines.launch</code> import at the start of this step.</p>
+<p><code>getQuestionnaireResponse</code> is a suspend function, so it is called from a coroutine launched in
+<code>scope</code>. It validates the answers before it returns the response. If any answers are invalid, the
+library shows a dialog that lists them and cancels the coroutine, so you don't have to handle
+validation errors yourself.</p>
+<p>The response is passed on to <code>submitQuestionnaire()</code>, at the end of <code>App.kt</code>, which is still empty.
+You'll fill it in over the next two steps.</p>
+<p>Your <code>App()</code> composable should now look like this:</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">@Composable
+fun App() {
+  val darkTheme = isSystemInDarkTheme()
+  MaterialTheme(colorScheme = if (darkTheme) darkColorScheme() else lightColorScheme()) {
+    Scaffold(topBar = { AppBar(darkTheme) }) { innerPadding -&gt;
+      Box(
+        modifier = Modifier.fillMaxSize().padding(innerPadding).consumeWindowInsets(innerPadding)
+      ) {
+        var questionnaireJson by remember { mutableStateOf&lt;String?&gt;(null) }
+        LaunchedEffect(Unit) {
+          questionnaireJson = Res.readBytes(&quot;files/questionnaire.json&quot;).decodeToString()
+        }
+        val scope = rememberCoroutineScope()
+
+        // 4 Display the questionnaire
+        questionnaireJson?.let { questionnaireJson -&gt;
+          Questionnaire(
+            questionnaireJson = questionnaireJson,
+            config = QuestionnaireConfig(showCancelButton = false),
+            onSubmit = { getQuestionnaireResponse -&gt;
+              // getQuestionnaireResponse() validates the answers first. If validation fails, the
+              // library shows an error dialog and cancels this coroutine.
+              scope.launch { submitQuestionnaire(questionnaireJson, getQuestionnaireResponse()) }
+            },
+            onCancel = {},
+          )
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<p>Save <code>App.kt</code> and wait for <code>BUILD OK</code>. The form looks the same as before. Clicking <strong>Submit</strong> still shows nothing, because <code>submitQuestionnaire()</code> is empty until the next step.</p>
+<p>Before you go on, check that the end of the import group in <code>App.kt</code> reads like this, and that the file has no line <code>import dev.ohs.fhir.model.r4.Questionnaire</code>.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import org.jetbrains.compose.resources.stringResource
+
+// 4 Imports for the Questionnaire composable
+import dev.ohs.fhir.datacapture.Questionnaire
+import dev.ohs.fhir.datacapture.QuestionnaireConfig
+import kotlinx.coroutines.launch
+
+// 5 Import for the JSON encoder
+
+// 6 Imports for extracting FHIR resources
+</code></pre>
+<p>If you would rather jump to a working version, type <code>step 4</code> in the <strong>Terminal</strong> tab.</p>
+<p>A questionnaire isn't very helpful if you can't see the answers that users input though. Let's go
+on to the next step of getting a Questionnaire Response!</p>
+<h2>5. Get a Questionnaire Response</h2>
+<p>In the previous steps, you rendered a FHIR questionnaire in your app.</p>
+<p>In this section, you'll get the answers from the questionnaire as a QuestionnaireResponse.</p>
+<p>This step needs one import. In <code>App.kt</code>, find the <code>// 5 Import for the JSON encoder</code> comment, which sits under the imports you added in step 4. You can also press Ctrl+F and type <code>// 5 Import</code>. Replace that comment with the following code.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 5 Import for the JSON encoder
+import kotlinx.serialization.json.Json
+</code></pre>
+<p>The <code>// 5 Import</code> comment is not in the published codelab. The lab adds it to the starter code to mark the place.</p>
+<h3>Step 1: Configure the JSON encoder</h3>
+<p>Find the <code>// 5.1 Replace with code from the codelab to configure the JSON encoder.</code> comment above
+<code>App()</code> and replace it with the following code:</p>
+<ol>
+<li>
+<p>Find the comment <code>// 5.1 Replace with code from the codelab to configure the JSON encoder.</code> in <code>App.kt</code>. It is a little under the import group and just above the line <code>@Composable</code> that comes before <code>fun App() {</code>. Press Ctrl+F and type <code>// 5.1</code> to jump to it.</p>
+</li>
+<li>
+<p>Select that one comment line and paste this block over it.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 5.1 Configure the JSON encoder
+private val json = Json {
+  explicitNulls = false
+  encodeDefaults = false
+}
+</code></pre>
+</li>
+</ol>
+<p>The Kotlin FHIR model classes are <code>kotlinx.serialization</code> classes, so a <code>Json</code> instance can encode
+them to JSON and decode them back. <code>explicitNulls = false</code> and <code>encodeDefaults = false</code> leave out
+empty fields, so the output looks like regular FHIR JSON.</p>
+<h3>Step 2: Print the questionnaire response</h3>
+<p>Find the <code>submitQuestionnaire()</code> method and replace the
+<code>// 5.2 Replace with code from the codelab to print the questionnaire response.</code> comment with the
+following code:</p>
+<ol>
+<li>
+<p>Go to <code>submitQuestionnaire()</code>. It is the last part of <code>App.kt</code>, at the very bottom of the file. Press Ctrl+F and type <code>// 5.2</code> to jump to the comment.</p>
+</li>
+<li>
+<p>Select that one comment line and paste these two lines over it.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 5.2 Print the questionnaire response
+println(&quot;response: ${json.encodeToString(questionnaireResponse)}&quot;)
+</code></pre>
+</li>
+</ol>
+<p>Leave the <code>// 6 Replace with code from the codelab</code> comment under it in place. You replace that one in step 6.</p>
+<p>The <code>questionnaireResponse</code> passed to <code>submitQuestionnaire()</code> is a Kotlin FHIR
+<code>QuestionnaireResponse</code>, which you can use directly or with other Kotlin FHIR libraries. This
+codelab encodes it to a JSON string so that you can view it in the log. The <code>println</code> output shows
+up in Logcat on Android, the Xcode console on iOS, the terminal on Desktop and the browser console
+on Web.</p>
+<p>On the lab the output appears in the <strong>Output</strong> tab of the Editor, next to the Build log.</p>
+<ol>
+<li>Save <code>App.kt</code> and wait for <code>BUILD OK</code> in the Build log.</li>
+<li>Switch to the App tab, fill in the form and click <strong>Submit</strong>.</li>
+<li>Switch back to the Editor tab. The <strong>Output</strong> tab has come to the front and shows an entry named <code>response</code>, with the JSON laid out for reading. Each entry has a <strong>Copy</strong> button.</li>
+</ol>
+<p>The same output also shows in a strip at the bottom of the App tab.</p>
+<p>The same text also goes to the browser console, which opens with F12, if you prefer to read it there.</p>
+<p>If you would rather jump to a working version, type <code>step 5</code> in the <strong>Terminal</strong> tab.</p>
+<h2>6. Extract FHIR Resources from a QuestionnaireResponse</h2>
+<p>The questionnaire included with the starter project is for a simple patient registration flow, so
+you may ultimately want to use the questionnaire responses to create a
+<a href="https://www.hl7.org/fhir/R4/patient.html">FHIR Patient resource</a> based on them. This conversion
+from a questionnaire response to FHIR resources is called
+<a href="https://hl7.org/fhir/uv/sdc/STU4/extraction.html">data extraction</a>. We can do this with the
+<code>TemplateExtractionEngine</code> class of Kotlin FHIR Data Capture.</p>
+<p>To perform data extraction, your questionnaire must be authored to include information on how to
+perform the data extraction. Luckily, the sample questionnaire is already set up for
+<a href="https://hl7.org/fhir/uv/sdc/STU4/extraction.html#template-extract">Template-based extraction</a>.
+If you open <code>questionnaire.json</code>, you'll find:</p>
+<ul>
+<li>
+<p>A <code>Patient</code> resource with the ID <code>patient-template</code> in the <code>contained</code> array. This is the
+template for the resource that gets extracted.</p>
+</li>
+<li>
+<p>An <code>sdc-questionnaire-templateExtract</code> extension on the questionnaire, which points to the
+template with <code>#patient-template</code>.</p>
+</li>
+<li>
+<p>An <code>sdc-questionnaire-templateExtractValue</code> extension on each template field that comes from an
+answer. It holds a FHIRPath expression that picks the answer, for example the family name:</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">%resource.repeat(item).where(linkId='PR-name-family').answer.value.first()
+</code></pre>
+</li>
+<li>
+<p>Template fields without an extension, such as the identifier <code>system</code>, which are copied to the
+extracted resource as they are.</p>
+</li>
+</ul>
+<p>The questionnaire also has <code>definition</code> elements and an <code>sdc-questionnaire-itemExtractionContext</code>
+extension. These are for
+<a href="https://hl7.org/fhir/uv/sdc/STU4/extraction.html#definition-extract">Definition-based extraction</a>,
+which the library doesn't support, so they are ignored.</p>
+<p>To open <code>questionnaire.json</code>, go to the Explorer and open <code>shared</code>, then <code>src</code>, then <code>commonMain</code>, then <code>composeResources</code>, then <code>files</code>, and click the file. You only read it in this step. Do not change it.</p>
+<p>This step needs two imports. In <code>App.kt</code>, find the <code>// 6 Imports for extracting FHIR resources</code> comment, which sits under the import you added in step 5. You can also press Ctrl+F and type <code>// 6 Imports</code>. Replace that comment with the following code.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 6 Imports for extracting FHIR resources
+import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
+import dev.ohs.fhir.model.r4.Questionnaire as FhirQuestionnaire
+</code></pre>
+<p>The <code>// 6 Imports</code> comment is not in the published codelab. The lab adds it to the starter code to mark the place.</p>
+<p>Copy the last line in full, with its <code>as FhirQuestionnaire</code> ending. Without that ending the build fails, because the name <code>Questionnaire</code> would then mean two different things.</p>
+<p>Find the <code>submitQuestionnaire()</code> method and replace the
+<code>// 6 Replace with code from the codelab to extract FHIR resources from the questionnaire response.</code>
+comment with the following code:</p>
+<ol>
+<li>
+<p>Go to <code>submitQuestionnaire()</code>, at the very bottom of <code>App.kt</code>. Press Ctrl+F and type <code>// 6 Replace</code> to jump to the comment. It sits under the <code>// 5.2 Print the questionnaire response</code> lines you added in step 5.</p>
+</li>
+<li>
+<p>Select that one comment line and paste these four lines over it.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 6 Extract FHIR resources from the questionnaire response
+val questionnaire = json.decodeFromString&lt;FhirQuestionnaire&gt;(questionnaireJson)
+val bundle = TemplateExtractionEngine.extract(questionnaire, questionnaireResponse)
+println(&quot;extraction result: ${json.encodeToString(bundle)}&quot;)
+</code></pre>
+</li>
+</ol>
+<p><code>TemplateExtractionEngine.extract()</code> requires a Kotlin FHIR Questionnaire, which you can create by
+decoding the questionnaire JSON string from earlier, and a QuestionnaireResponse, which we already
+got earlier. It returns a transaction
+<a href="https://www.hl7.org/fhir/R4/bundle.html">Bundle</a> containing one or more extracted resources–in
+this case a single Patient resource.</p>
+<p>Your <code>submitQuestionnaire()</code> method should now look like this:</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">private fun submitQuestionnaire(
+  questionnaireJson: String,
+  questionnaireResponse: QuestionnaireResponse,
+) {
+  // 5.2 Print the questionnaire response
+  println(&quot;response: ${json.encodeToString(questionnaireResponse)}&quot;)
+
+  // 6 Extract FHIR resources from the questionnaire response
+  val questionnaire = json.decodeFromString&lt;FhirQuestionnaire&gt;(questionnaireJson)
+  val bundle = TemplateExtractionEngine.extract(questionnaire, questionnaireResponse)
+  println(&quot;extraction result: ${json.encodeToString(bundle)}&quot;)
+}
+</code></pre>
+<p>Now run it.</p>
+<ol>
+<li>Save <code>App.kt</code> and wait for <code>BUILD OK</code> in the Build log.</li>
+<li>Switch to the App tab, fill in the form and click <strong>Submit</strong>.</li>
+<li>Switch back to the Editor tab and look in the <strong>Output</strong> tab for the entry named <code>extraction result</code>. The newest entry is on top, with the <code>response</code> entry under it.</li>
+</ol>
+<p>It is a FHIR Bundle of type <code>transaction</code> holding one Patient, with the names you typed.</p>
+<p>If you would rather jump to the finished code, type <code>step 6</code> in the <strong>Terminal</strong> tab.</p>
+<h2>7. Congratulations!</h2>
+<p style="border-left: 4px solid #2e7d32; background: #e8f5e9; padding: 8px 12px;">You have used Kotlin FHIR Data Capture to process FHIR questionnaires and responses in your app:</p>
+<ul>
+<li>Display a Questionnaire</li>
+<li>Get a Questionnaire Response</li>
+<li>Extract FHIR Resources from a QuestionnaireResponse</li>
+</ul>
+<p>That is all you need to get it up and running!</p>
+<h3>What we've covered</h3>
+<ul>
+<li>How to add Kotlin FHIR Data Capture to your Kotlin Multiplatform app</li>
+<li>How to use the <code>Questionnaire</code> composable and <code>TemplateExtractionEngine</code> to work with FHIR
+questionnaires</li>
+</ul>
+<h3>Next Steps</h3>
+<ul>
+<li>Run the codelab on the other platforms: Desktop, Web and iOS</li>
+<li>Customize the look and feel of rendered questionnaires with <code>QuestionnaireConfig</code></li>
+<li>Read the <a href="https://github.com/ohs-foundation/kotlin-fhir-data-capture/blob/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/docs/conformance.md">conformance</a> document to see which Questionnaire and SDC
+features the library supports</li>
+<li>Apply Kotlin FHIR Data Capture in your own app</li>
+</ul>
+<p>The other platforms need tools the lab does not have. To try them, follow the <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published codelab</a> on your own computer. Here are some things you can try on the lab.</p>
+<ul>
+<li>In <code>App.kt</code>, change <code>showCancelButton = false</code> to <code>true</code>, save, and see what the form gains</li>
+<li>Open <code>questionnaire.json</code>, change the <code>text</code> of a question and save</li>
+<li>Leave a field empty and submit, then compare the two entries in the Output tab</li>
+</ul>
+<h2>Troubleshooting</h2>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Symptom</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">You saved a file and the Build log shows no new build</td>
+<td style="border: 1px solid #333; padding: 8px;">Check the file's tab for a white dot, which means it is not saved yet. Then click <strong>Build now</strong> at the very bottom of the Editor, or type <code>build</code> in the <strong>Terminal</strong> tab.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The App tab says the app is still building</td>
+<td style="border: 1px solid #333; padding: 8px;">Wait for <code>BUILD OK</code> in the Build log. The page reloads automatically.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The App tab did not change after a build</td>
+<td style="border: 1px solid #333; padding: 8px;">Check that <strong>Auto refresh</strong> is ticked, or click <strong>Refresh</strong>. If it still shows the old version, check that the Build log says <code>BUILD OK</code> and not <code>BUILD FAILED</code>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Unresolved reference</code> in the Build log</td>
+<td style="border: 1px solid #333; padding: 8px;">An import is missing or misspelled. Click <strong>Fix imports</strong>, or compare your imports with the ones the step gives.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>No parameter with name 'questionnaireJson' found</code> or <code>No value passed for parameter 'status'</code></td>
+<td style="border: 1px solid #333; padding: 8px;"><code>App.kt</code> imports the wrong <code>Questionnaire</code>. Delete <code>import dev.ohs.fhir.model.r4.Questionnaire</code>, add <code>import dev.ohs.fhir.datacapture.Questionnaire</code>, or click <strong>Fix imports</strong>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Conflicting import</code> or <code>Overload resolution ambiguity</code> on <code>Questionnaire</code></td>
+<td style="border: 1px solid #333; padding: 8px;">The import in step 6 needs <code>as FhirQuestionnaire</code> at the end.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Unresolved reference 'datacapture'</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Step 3 is not done or not saved. Check the line in <code>shared/build.gradle.kts</code>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Unresolved reference 'Alignment'</code></td>
+<td style="border: 1px solid #333; padding: 8px;">The <code>Hello World!</code> line is still in the file. Step 4 replaces it.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Unresolved reference 'json'</code></td>
+<td style="border: 1px solid #333; padding: 8px;">The <code>// 5.1</code> code is missing. It creates the value that the <code>// 5.2</code> and <code>// 6</code> code use.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>Expecting</code> or <code>Syntax error</code></td>
+<td style="border: 1px solid #333; padding: 8px;">A bracket, brace or quote is missing or extra near the line number in the error.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The App tab is blank</td>
+<td style="border: 1px solid #333; padding: 8px;">Your browser is too old for this app. Use a current Chrome, Edge, Firefox or Safari.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Nothing appears in the Output tab</td>
+<td style="border: 1px solid #333; padding: 8px;">Click <strong>Submit</strong> again after the app has reloaded. Step 5 must be built for anything to print. The App tab and the Editor must also be open in the same browser, because the output travels between them through that browser.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The Guide, Build log or Output area is gone</td>
+<td style="border: 1px solid #333; padding: 8px;">Click its name in the bar at the very bottom of the Editor.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Open app</strong> does nothing</td>
+<td style="border: 1px solid #333; padding: 8px;">The browser blocked the new tab. Allow pop-ups for the lab address, or open the <strong>App</strong> address that <code>./lab-init.sh</code> printed.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The code is in a state you cannot fix</td>
+<td style="border: 1px solid #333; padding: 8px;">Type <code>step reset</code> in the <strong>Terminal</strong> tab, or <code>step</code> with the number of the last step you finished.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The Editor asks for the password again</td>
+<td style="border: 1px solid #333; padding: 8px;">Run <code>./lab-init.sh --info</code> in the Heropa terminal. It prints the same password without restarting anything.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">You came back and the tabs do not load</td>
+<td style="border: 1px solid #333; padding: 8px;">The VM was stopped. Start it in Heropa, wait a minute and reload the tabs. If they still do not load, run <code>./lab-init.sh</code> in its terminal and read <strong>Since the last run</strong> in what it prints. When that says <code>CHANGED</code>, open the new addresses. See <em>Find your addresses again</em>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The Editor or App address stopped working</td>
+<td style="border: 1px solid #333; padding: 8px;">The same cause and the same fix as the row above.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">You lost the addresses or the password</td>
+<td style="border: 1px solid #333; padding: 8px;">Run <code>./lab-init.sh --info</code> in the Heropa terminal. It prints them again.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The browser warns that the connection is not private</td>
+<td style="border: 1px solid #333; padding: 8px;">The lab is in reduced mode. Click <strong>Advanced</strong>, then <strong>Proceed</strong>. See <em>If the lab starts in reduced mode</em>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">The Editor shows a notice about reduced mode, or has no Guide, Build log or Output area</td>
+<td style="border: 1px solid #333; padding: 8px;">The lab could not get a trusted certificate. Use the pages listed under <em>If the lab starts in reduced mode</em>, and run <code>./lab-init.sh</code> again later.</td>
+</tr>
+</tbody>
+</table>

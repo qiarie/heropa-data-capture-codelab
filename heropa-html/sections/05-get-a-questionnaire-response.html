@@ -1,0 +1,58 @@
+<h2>5. Get a Questionnaire Response</h2>
+<p>In the previous steps, you rendered a FHIR questionnaire in your app.</p>
+<p>In this section, you'll get the answers from the questionnaire as a QuestionnaireResponse.</p>
+<p>This step needs one import. In <code>App.kt</code>, find the <code>// 5 Import for the JSON encoder</code> comment, which sits under the imports you added in step 4. You can also press Ctrl+F and type <code>// 5 Import</code>. Replace that comment with the following code.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 5 Import for the JSON encoder
+import kotlinx.serialization.json.Json
+</code></pre>
+<p>The <code>// 5 Import</code> comment is not in the published codelab. The lab adds it to the starter code to mark the place.</p>
+<h3>Step 1: Configure the JSON encoder</h3>
+<p>Find the <code>// 5.1 Replace with code from the codelab to configure the JSON encoder.</code> comment above
+<code>App()</code> and replace it with the following code:</p>
+<ol>
+<li>
+<p>Find the comment <code>// 5.1 Replace with code from the codelab to configure the JSON encoder.</code> in <code>App.kt</code>. It is a little under the import group and just above the line <code>@Composable</code> that comes before <code>fun App() {</code>. Press Ctrl+F and type <code>// 5.1</code> to jump to it.</p>
+</li>
+<li>
+<p>Select that one comment line and paste this block over it.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 5.1 Configure the JSON encoder
+private val json = Json {
+  explicitNulls = false
+  encodeDefaults = false
+}
+</code></pre>
+</li>
+</ol>
+<p>The Kotlin FHIR model classes are <code>kotlinx.serialization</code> classes, so a <code>Json</code> instance can encode
+them to JSON and decode them back. <code>explicitNulls = false</code> and <code>encodeDefaults = false</code> leave out
+empty fields, so the output looks like regular FHIR JSON.</p>
+<h3>Step 2: Print the questionnaire response</h3>
+<p>Find the <code>submitQuestionnaire()</code> method and replace the
+<code>// 5.2 Replace with code from the codelab to print the questionnaire response.</code> comment with the
+following code:</p>
+<ol>
+<li>
+<p>Go to <code>submitQuestionnaire()</code>. It is the last part of <code>App.kt</code>, at the very bottom of the file. Press Ctrl+F and type <code>// 5.2</code> to jump to the comment.</p>
+</li>
+<li>
+<p>Select that one comment line and paste these two lines over it.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 5.2 Print the questionnaire response
+println(&quot;response: ${json.encodeToString(questionnaireResponse)}&quot;)
+</code></pre>
+</li>
+</ol>
+<p>Leave the <code>// 6 Replace with code from the codelab</code> comment under it in place. You replace that one in step 6.</p>
+<p>The <code>questionnaireResponse</code> passed to <code>submitQuestionnaire()</code> is a Kotlin FHIR
+<code>QuestionnaireResponse</code>, which you can use directly or with other Kotlin FHIR libraries. This
+codelab encodes it to a JSON string so that you can view it in the log. The <code>println</code> output shows
+up in Logcat on Android, the Xcode console on iOS, the terminal on Desktop and the browser console
+on Web.</p>
+<p>On the lab the output appears in the <strong>Output</strong> tab of the Editor, next to the Build log.</p>
+<ol>
+<li>Save <code>App.kt</code> and wait for <code>BUILD OK</code> in the Build log.</li>
+<li>Switch to the App tab, fill in the form and click <strong>Submit</strong>.</li>
+<li>Switch back to the Editor tab. The <strong>Output</strong> tab has come to the front and shows an entry named <code>response</code>, with the JSON laid out for reading. Each entry has a <strong>Copy</strong> button.</li>
+</ol>
+<p>The same output also shows in a strip at the bottom of the App tab.</p>
+<p>The same text also goes to the browser console, which opens with F12, if you prefer to read it there.</p>
+<p>If you would rather jump to a working version, type <code>step 5</code> in the <strong>Terminal</strong> tab.</p>

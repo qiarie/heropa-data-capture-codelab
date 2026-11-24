@@ -1,0 +1,48 @@
+<h2>3. Add Kotlin FHIR Data Capture to the project</h2>
+<h3>Add the dependency for Kotlin FHIR Data Capture</h3>
+<p>The Kotlin FHIR Data Capture dependency allows you to integrate the library in your app. Add the
+following line below the <code>// 3 Add the dependency for Kotlin FHIR Data Capture</code> comment in the
+<code>commonMain</code> dependencies of the <code>shared/build.gradle.kts</code> file:</p>
+<p>Do this in the Editor tab.</p>
+<ol>
+<li>
+<p>Open <code>shared/build.gradle.kts</code>. In the Explorer, click the <code>shared</code> folder, then the <code>build.gradle.kts</code> file inside it. The line of small text above the code must read <code>shared &gt; build.gradle.kts</code>.</p>
+</li>
+<li>
+<p>Find the comment <code>// 3 Add the dependency for Kotlin FHIR Data Capture</code>. It is on line 46.</p>
+</li>
+<li>
+<p>Click at the end of that comment line and press Enter to make a new line under it.</p>
+</li>
+<li>
+<p>Paste this one line.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">implementation(&quot;dev.ohs.fhir:fhir-data-capture:2.0.0-alpha05&quot;)
+</code></pre>
+</li>
+<li>
+<p>Check your change against the block below, which shows the new line in its place. The <code>// ...</code> line stands for the lines that are already in the file. You do not paste this block.</p>
+</li>
+</ol>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">kotlin {
+  sourceSets {
+    commonMain.dependencies {
+      // ...
+
+      // 3 Add the dependency for Kotlin FHIR Data Capture
+      implementation(&quot;dev.ohs.fhir:fhir-data-capture:2.0.0-alpha05&quot;)
+    }
+  }
+}
+</code></pre>
+<p>Because the dependency is in <code>commonMain</code>, Gradle picks the right artifact for each target
+platform. The <code>androidApp</code>, <code>desktopApp</code> and <code>webApp</code> modules get the library through their
+dependency on <code>shared</code>.</p>
+<p>The starter project already includes the <a href="https://github.com/ohs-foundation/kotlin-fhir">Kotlin FHIR</a>
+model and <code>kotlinx-serialization-json</code>, which you'll use later in the codelab.</p>
+<h3>Sync your project with Gradle files</h3>
+<p>On the lab, saving the file does the job of the <strong>Sync Project with Gradle Files</strong> button in Android Studio.</p>
+<ol>
+<li>Save <code>shared/build.gradle.kts</code> with Ctrl+S, or Cmd+S on a Mac.</li>
+<li>Watch the Build log until it prints <code>BUILD OK</code>. This build takes two to three minutes, because the whole library is compiled into the app for the first time.</li>
+</ol>
+<p>The App tab looks the same after this step, because nothing uses the library yet.</p>

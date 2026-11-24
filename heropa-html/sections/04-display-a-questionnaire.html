@@ -1,0 +1,150 @@
+<h2>4. Display a Questionnaire</h2>
+<p>In this step, you will add the functionality to the starter app to render a questionnaire with the
+<code>Questionnaire</code> composable.</p>
+<p>Open <code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code>. The <code>App()</code> composable already
+reads the questionnaire JSON from the resources into <code>questionnaireJson</code>, and creates a coroutine
+<code>scope</code> that you'll use later in this step:</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">var questionnaireJson by remember { mutableStateOf&lt;String?&gt;(null) }
+LaunchedEffect(Unit) {
+  questionnaireJson = Res.readBytes(&quot;files/questionnaire.json&quot;).decodeToString()
+}
+val scope = rememberCoroutineScope()
+</code></pre>
+<p>Start with the three imports this step needs. The web editor does not add imports for you, so you paste them in yourself, before any other code.</p>
+<ol>
+<li>
+<p>Go to <code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code>. It is the other tab in the Code area.</p>
+</li>
+<li>
+<p>Find the <code>// 4 Imports for the Questionnaire composable</code> comment. It is on line 52, just under the import lines. You can also press Ctrl+F and type <code>// 4 Imports</code>.</p>
+</li>
+<li>
+<p>Replace that comment with the following code. The first line puts the comment back, so the imports end up right under it.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 4 Imports for the Questionnaire composable
+import dev.ohs.fhir.datacapture.Questionnaire
+import dev.ohs.fhir.datacapture.QuestionnaireConfig
+import kotlinx.coroutines.launch
+</code></pre>
+</li>
+</ol>
+<p>The <code>// 4 Imports</code> comment is not in the published codelab. The lab adds it to the starter code to mark the place.</p>
+<p>Copy the lines exactly. The first import is the form, and it must come from <code>datacapture</code>. A different class, <code>dev.ohs.fhir.model.r4.Questionnaire</code>, has the same short name and breaks this step.</p>
+<h3>Step 1: Add the Questionnaire composable</h3>
+<p>The <code>Questionnaire</code> composable requires a JSON encoded FHIR Questionnaire for it to render.</p>
+<p>You can look at the <code>questionnaire.json</code> file if you want, but one of the benefits of Kotlin FHIR
+Data Capture is that you don't need to know the structure of the FHIR Questionnaire (or anything
+about FHIR) to get it to render it! You'll look more closely at this file later in the codelab.</p>
+<p>The three steps below make this change. These notes tell you where each thing they name is.</p>
+<ul>
+<li>The comment <code>// 4 Replace with code from the codelab to display the questionnaire.</code> is inside <code>App()</code>, near line 83 now that the imports are in. Press Ctrl+F and type <code>// 4 Replace</code> to jump to it. Just under it is the line that starts with <code>Text(text = &quot;Hello World!&quot;</code>.</li>
+<li>Select both of those lines, delete them and paste the block from step 3 where they were. The new block starts with its own numbered comment, <code>// 4 Display the questionnaire</code>.</li>
+<li>The <code>androidx.compose.ui.Alignment</code> import is in the import group near the top of the file, on the line <code>import androidx.compose.ui.Alignment</code>. Deleting it is optional. An unused import does no harm.</li>
+</ul>
+<ol>
+<li>
+<p>Find the <code>// 4 Replace with code from the codelab to display the questionnaire.</code> comment in
+<code>App()</code>.</p>
+</li>
+<li>
+<p>You don't need the <code>Hello World!</code> text, so delete the <code>Text(...)</code> line below the comment. You
+can also delete the <code>androidx.compose.ui.Alignment</code> import, which is no longer used.</p>
+</li>
+<li>
+<p>Add the following code in its place:</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 4 Display the questionnaire
+questionnaireJson?.let { questionnaireJson -&gt;
+  Questionnaire(
+    questionnaireJson = questionnaireJson,
+    config = QuestionnaireConfig(showCancelButton = false),
+    onSubmit = {},
+    onCancel = {},
+  )
+}
+</code></pre>
+</li>
+</ol>
+<p>The questionnaire is shown as soon as <code>questionnaireJson</code> has been read. <code>QuestionnaireConfig</code> lets
+you customize how the questionnaire is displayed. Here it hides the <strong>Cancel</strong> button, so only the
+<strong>Submit</strong> button is shown, and <code>onCancel</code> can be left empty.</p>
+<p>Now run it. Save <code>App.kt</code> with Ctrl+S, wait for <code>BUILD OK</code> in the Build log, then look at the App tab. It shows the questionnaire as a form.</p>
+<p>The picture below shows the same form on an Android phone.</p>
+<p><img src="https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image2.png" alt="The questionnaire shown as a form on an Android phone" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /></p>
+<p>If the Build log prints <code>BUILD FAILED</code>, read the <strong>What to do</strong> list under the errors, or click <strong>Fix imports</strong> at the bottom of the Editor.</p>
+<p>Navigate through the questionnaire and try entering some answers. There are a few different answer
+widgets used, including text fields and a date picker, which were automatically rendered based on
+the underlying type in the original FHIR questionnaire.</p>
+<p><em>Technically, that's all you need to do to render a questionnaire! Congratulations!</em></p>
+<h3>Step 2: Handle the Submit button</h3>
+<p>At the moment nothing happens when you tap <strong>Submit</strong>. The library calls <code>onSubmit</code> when the
+button is tapped, so replace <code>onSubmit = {},</code> with the following code:</p>
+<ol>
+<li>
+<p>Find the line <code>onSubmit = {},</code>. It is inside the block you pasted in Step 1, four lines under the <code>// 4 Display the questionnaire</code> comment. Press Ctrl+F and type <code>onSubmit</code> to jump to it. This piece of code does not have its own numbered comment.</p>
+</li>
+<li>
+<p>Replace that one line with these five lines. Leave the <code>onCancel = {},</code> line under it in place.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">onSubmit = { getQuestionnaireResponse -&gt;
+  // getQuestionnaireResponse() validates the answers first. If validation fails, the
+  // library shows an error dialog and cancels this coroutine.
+  scope.launch { submitQuestionnaire(questionnaireJson, getQuestionnaireResponse()) }
+},
+</code></pre>
+</li>
+</ol>
+<p>The new code uses <code>launch</code>, which is why you added the <code>kotlinx.coroutines.launch</code> import at the start of this step.</p>
+<p><code>getQuestionnaireResponse</code> is a suspend function, so it is called from a coroutine launched in
+<code>scope</code>. It validates the answers before it returns the response. If any answers are invalid, the
+library shows a dialog that lists them and cancels the coroutine, so you don't have to handle
+validation errors yourself.</p>
+<p>The response is passed on to <code>submitQuestionnaire()</code>, at the end of <code>App.kt</code>, which is still empty.
+You'll fill it in over the next two steps.</p>
+<p>Your <code>App()</code> composable should now look like this:</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">@Composable
+fun App() {
+  val darkTheme = isSystemInDarkTheme()
+  MaterialTheme(colorScheme = if (darkTheme) darkColorScheme() else lightColorScheme()) {
+    Scaffold(topBar = { AppBar(darkTheme) }) { innerPadding -&gt;
+      Box(
+        modifier = Modifier.fillMaxSize().padding(innerPadding).consumeWindowInsets(innerPadding)
+      ) {
+        var questionnaireJson by remember { mutableStateOf&lt;String?&gt;(null) }
+        LaunchedEffect(Unit) {
+          questionnaireJson = Res.readBytes(&quot;files/questionnaire.json&quot;).decodeToString()
+        }
+        val scope = rememberCoroutineScope()
+
+        // 4 Display the questionnaire
+        questionnaireJson?.let { questionnaireJson -&gt;
+          Questionnaire(
+            questionnaireJson = questionnaireJson,
+            config = QuestionnaireConfig(showCancelButton = false),
+            onSubmit = { getQuestionnaireResponse -&gt;
+              // getQuestionnaireResponse() validates the answers first. If validation fails, the
+              // library shows an error dialog and cancels this coroutine.
+              scope.launch { submitQuestionnaire(questionnaireJson, getQuestionnaireResponse()) }
+            },
+            onCancel = {},
+          )
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<p>Save <code>App.kt</code> and wait for <code>BUILD OK</code>. The form looks the same as before. Clicking <strong>Submit</strong> still shows nothing, because <code>submitQuestionnaire()</code> is empty until the next step.</p>
+<p>Before you go on, check that the end of the import group in <code>App.kt</code> reads like this, and that the file has no line <code>import dev.ohs.fhir.model.r4.Questionnaire</code>.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import org.jetbrains.compose.resources.stringResource
+
+// 4 Imports for the Questionnaire composable
+import dev.ohs.fhir.datacapture.Questionnaire
+import dev.ohs.fhir.datacapture.QuestionnaireConfig
+import kotlinx.coroutines.launch
+
+// 5 Import for the JSON encoder
+
+// 6 Imports for extracting FHIR resources
+</code></pre>
+<p>If you would rather jump to a working version, type <code>step 4</code> in the <strong>Terminal</strong> tab.</p>
+<p>A questionnaire isn't very helpful if you can't see the answers that users input though. Let's go
+on to the next step of getting a Questionnaire Response!</p>
