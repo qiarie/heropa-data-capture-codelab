@@ -37,6 +37,9 @@ services:
       # The learner manual, which the editor shows beside the code. It is
       # mounted so an edit needs a restart of this container and no rebuild.
       - ./course-manual.md:/opt/codelab/guide/course-manual.md:ro
+      # The pictures the manual shows from this repository. The manual names
+      # them by a path next to itself, so they are mounted next to it.
+      - ./images:/opt/codelab/guide/images:ro
 
   nginx:
     image: nginx:1.27-alpine

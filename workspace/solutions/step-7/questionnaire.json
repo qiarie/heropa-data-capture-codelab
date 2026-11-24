@@ -1,0 +1,218 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "http://example.org/Questionnaire/patient-registration",
+  "status": "draft",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+      "valueExpression": {
+        "language": "application/x-fhir-query",
+        "expression": "Patient",
+        "name": "patient"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+      "extension": [
+        {
+          "url": "template",
+          "valueReference": {
+            "reference": "#patient-template"
+          }
+        }
+      ]
+    }
+  ],
+  "contained": [
+    {
+      "resourceType": "Patient",
+      "id": "patient-template",
+      "name": [
+        {
+          "family": "",
+          "_family": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                "valueString": "%resource.repeat(item).where(linkId='PR-name-family').answer.value.first()"
+              }
+            ]
+          },
+          "given": [
+            ""
+          ],
+          "_given": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "%resource.repeat(item).where(linkId='PR-name-given').answer.value"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "birthDate": "1900-01-01",
+      "_birthDate": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+            "valueString": "%resource.repeat(item).where(linkId='PR-birthdate').answer.value.first()"
+          }
+        ]
+      },
+      "identifier": [
+        {
+          "system": "http://example.org/mrn",
+          "value": "",
+          "_value": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                "valueString": "%resource.repeat(item).where(linkId='PR-name-id').answer.value.first()"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "item": [
+    {
+      "linkId": "PR",
+      "type": "group",
+      "text": "Patient information",
+      "item": [
+        {
+          "linkId": "PR-name",
+          "type": "group",
+          "text": "Name",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
+          "item": [
+            {
+              "linkId": "PR-name-given",
+              "required": true,
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
+              "type": "string",
+              "text": "First Name"
+            },
+            {
+              "linkId": "PR-name-family",
+              "required": true,
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family",
+              "type": "string",
+              "text": "Family Name"
+            }
+          ]
+        },
+        {
+          "linkId": "PR-birthdate",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDate": "1900-01-01"
+            }
+          ],
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+          "type": "date",
+          "text": "Date of Birth"
+        },
+        {
+          "linkId": "PR-gender",
+          "type": "choice",
+          "text": "Gender",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://example.org/gender",
+                "code": "female",
+                "display": "Female"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://example.org/gender",
+                "code": "male",
+                "display": "Male"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://example.org/gender",
+                "code": "other",
+                "display": "Other"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "PR-has-phone",
+          "type": "boolean",
+          "text": "Does the patient have a phone number?"
+        },
+        {
+          "linkId": "PR-phone",
+          "type": "string",
+          "text": "Phone number",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "PR-has-phone",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/regex",
+              "valueString": "^[0-9]{10}$"
+            }
+          ]
+        },
+        {
+          "linkId": "PR-id",
+          "type": "group",
+          "text": "Identifying information",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier",
+          "item": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+                  "valueBoolean": true
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueString": "http://example.org/mrn"
+                }
+              ],
+              "linkId": "PR-name-id-url",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.system",
+              "type": "string"
+            },
+            {
+              "linkId": "PR-name-id",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
+              "type": "string",
+              "text": "Patient Id"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

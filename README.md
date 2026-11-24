@@ -67,7 +67,10 @@ The editor colours Kotlin but has no code completion, no import prompts and no e
 | Build hints | After a failed build, the panel prints a **What to do** list that names the missing or wrong import in plain words. `workspace/bin/codelab-hints` holds the rules. |
 | `build` | Starts a build without a save. The build watcher runs it, so it shows in the build log like any other. A **Build now** button in the status bar saves every open file and then runs it. |
 | `fix-imports` | Adds the imports the code in `App.kt` needs and removes the wrong `Questionnaire` import. A **Fix imports** button in the status bar runs it. |
-| `step N` | Replaces both files with a working version of step N. |
+| `step N` | Replaces the two code files and the questionnaire with a working version of step N, from 3 to 7. |
+| `step reset` | Puts the two code files and the questionnaire back to the starter. |
+
+Step 7 of the manual is not in the published codelab. It was written for this lab to show more of what a Questionnaire can do. The learner adds four rules to `questionnaire.json`, which are two required answers, a lowest allowed date of birth, a phone question shown by skip logic, and a pattern the phone number must match. No Kotlin code changes in that step. The step ends with the learner designing a Gender question in the [Helsenorge form builder](https://skjemabygger.helsenorge.no/) and copying its JSON into the file. The learner copies one question and not the whole file, because the form builder drops the `contained` template that extraction needs. `maxLength` was left out on purpose, because version `2.0.0-alpha05` of the library prints a broken error message for it.
 
 The image build also adds one build setting, `kotlin.incremental.wasm=true`, to `codelabs/gradle.properties`, in the same commit as the numbered import comments. A build after a small edit then rebuilds only what the edit changed. Kotlin 2.3.21 marks the setting as experimental. If a build ever leaves a stale app in the App preview tab, remove that line from the image build in `workspace/Dockerfile` and build the image again.
 
@@ -82,7 +85,7 @@ The most common mistake is importing `dev.ohs.fhir.model.r4.Questionnaire` in st
 | `docker-compose.yml` | The two containers and the volume that holds the learner's work |
 | `workspace/Dockerfile` | The workspace image, pinned to one commit of the codelab |
 | `workspace/bin/` | The build watcher, the build hints, the `fix-imports` and `step` helpers and the container entry point |
-| `workspace/solutions/` | The two codelab files as they stand at the end of steps 3 to 6, and the starter `App.kt` with the numbered import comments added |
+| `workspace/solutions/` | The two codelab files as they stand at the end of steps 3 to 6, the questionnaire as it stands at the end of step 7, and the starter `App.kt` with the numbered import comments added |
 | `workspace/ide/` | Editor settings and the small extension that lays out the code, build log and manual |
 | `nginx/` | The path routes and the static pages, which are the start page, the app preview, the build log, the output and the waiting page |
 | `course-manual.md` | The learner manual, shaped as Heropa Sections and Exercises |
@@ -251,10 +254,11 @@ The manual maps onto Heropa content as one Section, with one Exercise for each s
 | 4 | Display a Questionnaire |
 | 5 | Get a Questionnaire Response |
 | 6 | Extract FHIR Resources from a QuestionnaireResponse |
-| 7 | Congratulations |
-| 8 | Troubleshooting |
+| 7 | Add validation and skip logic to the questionnaire |
+| 8 | Congratulations |
+| 9 | Troubleshooting |
 
-Load it as Custom content by pasting each exercise into the rich text editor, or publish it through GitBook and add it as External content. The two pictures load from GitHub at the pinned commit, so they need no upload.
+Load it as Custom content by pasting each exercise into the rich text editor, or publish it through GitBook and add it as External content. The two pictures load from GitHub at the pinned commit, so they need no upload. The two form builder pictures in step 7 are files in `images/`. The lab mounts that folder next to the manual, so the Guide shows them. Heropa cannot reach them there, so upload both to Heropa and point the two `img` tags of exercise 7 at the uploaded copies.
 
 The text taken from the published codelab keeps its own punctuation and line breaks. Only the text written for the lab follows this repository's prose rule.
 
@@ -374,6 +378,28 @@ Do not edit these, because the next run replaces them.
 | `LAB_URL` | An address | The address the Editor and App preview addresses are built on. It changes when the public IP changes. |
 | `LAB_MODE` | `full` or `reduced` | Whether browsers trust the certificate in use |
 | `LAB_NGINX_CONF` | `lab-https` or `lab-http` | Which nginx front is in use. `lab-http` goes with `LAB_CERT` set to `none`. |
+
+## Resetting the lab
+
+There are three ways to reset, from the lightest to the heaviest. None of them rebuilds an image.
+
+| Command | Where | What it resets | What it keeps |
+|---|---|---|---|
+| `step reset` | Editor terminal | The two code files and the questionnaire, back to the starter | Every other file, and a copy of the replaced files in `~/backups` |
+| `./lab-init.sh --reset` | VM terminal | The whole learner volume. The lab then starts again from the image. | `.env` with the password, the certificate and the images |
+| `./lab-init.sh --clean` | VM terminal | Everything `--reset` does, plus `.env`, the password and the certificate. The lab stays stopped. | The images and the `letsencrypt` folder |
+
+To get a lab that looks as if nobody has used it, without restarting anything, run this in the editor terminal. The app rebuilds to the starter on its own.
+
+```bash
+step reset
+```
+
+Use `./lab-init.sh --reset` when a learner changed files that `step reset` does not cover.
+
+Use `./lab-init.sh --clean` only before saving the VM as a template, as Step 3 describes. Do not run `./lab-init.sh` again after it, or the template carries a password and a volume.
+
+`./lab-init.sh --info` resets nothing. It prints the addresses and the password again.
 
 ## Updating the codelab version
 

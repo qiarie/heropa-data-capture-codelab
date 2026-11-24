@@ -22,6 +22,8 @@ This lab focuses on the Web (Wasm) version. Wasm is short for WebAssembly, the f
 *   How to display a Questionnaire
 *   How to get answers as a QuestionnaireResponse
 *   How to extract FHIR resources from a QuestionnaireResponse
+*   How to add validation and skip logic to a Questionnaire
+*   How to design a question in a form builder and add it to a Questionnaire
 
 ### What you'll need
 
@@ -342,8 +344,8 @@ If `App.kt` imports `dev.ohs.fhir.model.r4.Questionnaire` without the `as FhirQu
 | Help | What it does |
 |---|---|
 | **Fix imports** button, at the bottom of the Editor | Adds every import the code in `App.kt` needs and removes the wrong `Questionnaire` import. This is the closest thing to what Android Studio does. |
-| `step 3`, `step 4`, `step 5` or `step 6`, typed in the **Terminal** tab | Replaces both files with a working version of the code as it stands at the end of that step |
-| `step reset`, typed in the **Terminal** tab | Puts both files back to the starter code |
+| `step 3`, `step 4`, `step 5`, `step 6` or `step 7`, typed in the **Terminal** tab | Replaces the two code files and the questionnaire with a working version as they stand at the end of that step |
+| `step reset`, typed in the **Terminal** tab | Puts the two code files and the questionnaire back to the starter versions |
 
 Your own files are copied to the `backups` folder in your home folder before any of these change them.
 
@@ -731,13 +733,272 @@ It is a FHIR Bundle of type `transaction` holding one Patient, with the names yo
 
 If you would rather jump to the finished code, type `step 6` in the **Terminal** tab.
 
-## 7. Congratulations!
+## 7. Add validation and skip logic to the questionnaire
+
+So far the form accepts whatever you type, and it always shows the same questions. In this step you change both, without touching the Kotlin code. Everything you add goes into `questionnaire.json`. The library reads the file and does the rest.
+
+This is the main idea behind a FHIR Questionnaire. The rules of a form live in the form's own definition, so the same file behaves the same way in every app that shows it.
+
+You add four rules by hand. At the end of the step you add one more question with a form builder, a tool that writes the JSON for you.
+
+| Rule | Where it goes | What it does in the app |
+|---|---|---|
+| A required answer | First Name and Family Name | The form reports an error when a name is empty |
+| A lowest allowed value | Date of Birth | A date before the year 1900 is refused |
+| Skip logic | A new yes or no question, and a new Phone number question | Phone number is shown only after you answer Yes |
+| A pattern the answer must match | Phone number | Anything other than ten digits is refused |
+
+In FHIR the first rule is the `required` element and the third is the `enableWhen` element. The second and the fourth are extensions, named [minValue](https://hl7.org/fhir/R4/extension-minvalue.html) and [regex](https://hl7.org/fhir/R4/extension-regex.html).
+
+Open `questionnaire.json` the same way as in step 6. In the Explorer, open `shared`, then `src`, then `commonMain`, then `composeResources`, then `files`, and click the file. Press Ctrl+F to find each line the steps name.
+
+**Keep every comma.** JSON separates the parts of a list with commas, and one missing or extra comma breaks the whole file. Each block below already has the commas it needs, so paste it as it is. How far a line is indented does not matter.
+
+### Make the two names required
+
+1. Find the line `"linkId": "PR-name-given",`. It belongs to the First Name question.
+2. Click at the end of that line, press Enter and paste this line.
+
+   ```json
+   "required": true,
+   ```
+
+3. Find the line `"linkId": "PR-name-family",` and paste the same line under it.
+
+### Set the earliest date of birth
+
+1. Find the line `"linkId": "PR-birthdate",`.
+2. Click at the end of that line, press Enter and paste this block.
+
+   ```json
+   "extension": [
+     {
+       "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+       "valueDate": "1900-01-01"
+     }
+   ],
+   ```
+
+### Add a question that is shown only when it is needed
+
+1. Find the line `"text": "Date of Birth"`. The line under it holds only `},` and closes the Date of Birth question.
+2. Click at the end of that `},` line, press Enter and paste this block. It adds two questions.
+
+   ```json
+   {
+     "linkId": "PR-has-phone",
+     "type": "boolean",
+     "text": "Does the patient have a phone number?"
+   },
+   {
+     "linkId": "PR-phone",
+     "type": "string",
+     "text": "Phone number",
+     "required": true,
+     "enableWhen": [
+       {
+         "question": "PR-has-phone",
+         "operator": "=",
+         "answerBoolean": true
+       }
+     ],
+     "extension": [
+       {
+         "url": "http://hl7.org/fhir/StructureDefinition/regex",
+         "valueString": "^[0-9]{10}$"
+       }
+     ]
+   },
+   ```
+
+The first question is a yes or no question. The second one carries the skip logic in `enableWhen`, which names the question to watch, `PR-has-phone`, and the answer that switches it on, `true`. The pattern `^[0-9]{10}$` means exactly ten digits. Phone number is required as well, and that rule applies only while the question is shown.
+
+### Check your changes
+
+The questions from Name down to Phone number now read as follows. The lines above and below them are unchanged.
+
+```json
+{
+  "linkId": "PR-name",
+  "type": "group",
+  "text": "Name",
+  "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
+  "item": [
+    {
+      "linkId": "PR-name-given",
+      "required": true,
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
+      "type": "string",
+      "text": "First Name"
+    },
+    {
+      "linkId": "PR-name-family",
+      "required": true,
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family",
+      "type": "string",
+      "text": "Family Name"
+    }
+  ]
+},
+{
+  "linkId": "PR-birthdate",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+      "valueDate": "1900-01-01"
+    }
+  ],
+  "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+  "type": "date",
+  "text": "Date of Birth"
+},
+{
+  "linkId": "PR-has-phone",
+  "type": "boolean",
+  "text": "Does the patient have a phone number?"
+},
+{
+  "linkId": "PR-phone",
+  "type": "string",
+  "text": "Phone number",
+  "required": true,
+  "enableWhen": [
+    {
+      "question": "PR-has-phone",
+      "operator": "=",
+      "answerBoolean": true
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/regex",
+      "valueString": "^[0-9]{10}$"
+    }
+  ]
+},
+```
+
+### Run it
+
+1. Save `questionnaire.json` with Ctrl+S and wait for `BUILD OK` in the Build log. No Kotlin code changed, and the lab still builds the app, because the file is packed into it.
+2. Switch to the App preview tab. Leave the form empty and click **Submit**. A box named **Errors found** lists First Name and Family Name. Click **Fix questions**. Both fields are now marked in red with the words `Missing answer for required field.`
+3. Click in **Date of Birth** and type `01011850`. The field turns red and says `Minimum value allowed is:1900-01-01`. Type a date after 1900 and the message goes away.
+4. Under **Does the patient have a phone number?** click **Yes**. The Phone number question appears. Click **No** and it disappears. Click **Yes** again.
+5. Type `123` in **Phone number** and click anywhere outside the field. The field turns red and says the answer does not match the regular expression. Type ten digits, such as `0712345678`, and the message goes away.
+6. Type a first name and a family name, then click **Submit**.
+7. Switch back to the Editor tab and open the `response` entry in the **Output** tab. It has two new answers, under `PR-has-phone` and `PR-phone`.
+
+Open the `extraction result` entry as well. The Patient has the names and the date of birth, and no phone number. Extraction copies only what the template inside the questionnaire names, and that template does not mention the phone yet.
+
+### Add a question with a form builder
+
+Writing JSON by hand works for a small change. For anything larger, the people who design questionnaires use a form builder. That is a page where you put a form together with the mouse, and it writes the JSON for you. This part uses the [Helsenorge form builder](https://skjemabygger.helsenorge.no/), made by the Norwegian health service. It is free, runs in your browser and needs no account. You use it to add a Gender question with three choices.
+
+**Do not replace your file with the one the form builder makes.** The form builder leaves out the `contained` part of the questionnaire, which holds the template step 6 uses to extract the Patient. It also gives the questionnaire a new `url`. You copy one question out of the form builder instead.
+
+#### Open your questionnaire in the form builder
+
+1. In the Explorer of the Editor, right-click `questionnaire.json` and choose **Download**. Your browser saves the file on your computer.
+2. Open [skjemabygger.helsenorge.no](https://skjemabygger.helsenorge.no/) in a new browser tab.
+3. Click **Upload questionnaire** and pick the file you downloaded.
+
+The form builder shows your questionnaire as a list of questions. The picture below was taken after the Gender question was added.
+
+![The questionnaire in the Helsenorge form builder, with the Gender question under Date of Birth](images/form-builder-form.jpg)
+
+You can see the rules you added by hand. First Name, Family Name and Phone number carry a **Required** mark, and the small icon beside Phone number stands for its skip logic. The row marked as hidden is a question the starter file hides from the form.
+
+The page opens in English or Norwegian. To change it, open the menu behind the three dots at the top right and pick the entry that names the other language.
+
+#### Add the Gender question
+
+1. Find **Choice** in the **Components** list on the left. Drag it into the list of questions and drop it just under **Date of Birth**. If it lands inside another question, drag it again until it sits on the same level as Date of Birth.
+2. Click the new row. A panel opens on the right.
+3. In **Text**, type `Gender`.
+4. Under **Display type**, choose **Radio buttons**.
+5. Each row under **System** is one choice, with a title on the left and a value on the right. Fill the two rows with `Female` and `female`, then `Male` and `male`.
+6. Click **Add option** and fill the new row with `Other` and `other`.
+7. Check that the three values read `female`, `male` and `other`, and correct any that differ.
+8. Close the panel with the cross at its top left.
+
+![The Gender question open in the form builder, with radio buttons chosen and three options](images/form-builder-question.jpg)
+
+#### Copy the question into your file
+
+1. Open the menu behind the three dots at the top right and choose **JSON**. The form builder shows the whole questionnaire as JSON.
+2. Find the line `"text": "Gender"`. The question is the block around that line. It starts at the `{` just above its `"linkId"` line and ends at the `}` just above the block for `PR-has-phone`.
+3. Select that block and copy it.
+4. Go back to `questionnaire.json` in the Editor and find the line `"text": "Date of Birth"`. The line under it holds only `},`.
+5. Click at the end of that `},` line, press Enter and paste the block.
+6. Type a comma after the last `}` of the block you pasted.
+
+The block you pasted reads like the one below. Yours has longer values for `linkId` and `system`, and an `id` line in each choice, because the form builder makes those up. They work as they are. The one below is the same question with shorter names, and you can paste it in place of your own if you prefer.
+
+```json
+{
+  "linkId": "PR-gender",
+  "type": "choice",
+  "text": "Gender",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+            "code": "radio-button"
+          }
+        ]
+      }
+    }
+  ],
+  "answerOption": [
+    {
+      "valueCoding": {
+        "system": "http://example.org/gender",
+        "code": "female",
+        "display": "Female"
+      }
+    },
+    {
+      "valueCoding": {
+        "system": "http://example.org/gender",
+        "code": "male",
+        "display": "Male"
+      }
+    },
+    {
+      "valueCoding": {
+        "system": "http://example.org/gender",
+        "code": "other",
+        "display": "Other"
+      }
+    }
+  ]
+},
+```
+
+Three parts of the block do the work. The `type` of `choice` says the answer comes from a list. Each entry under `answerOption` is one choice, with the `code` that is saved and the `display` text shown on the form. The `questionnaire-itemControl` extension asks for radio buttons.
+
+#### Run it again
+
+1. Save `questionnaire.json` and wait for `BUILD OK` in the Build log.
+2. Switch to the App preview tab. A **Gender** question with three choices now sits under Date of Birth.
+3. Choose one, fill in the names and click **Submit**.
+4. In the **Output** tab, open the `response` entry. The Gender answer is a `valueCoding` that holds the `code` and the `display` of your choice.
+
+The `extraction result` has no gender, for the same reason it has no phone number. The template does not name it.
+
+If the form does not appear, or the questions are not the ones described here, a comma or a bracket is out of place in `questionnaire.json`. Compare your file with the block under **Check your changes**. If you would rather jump to a working version, type `step 7` in the **Terminal** tab.
+
+## 8. Congratulations!
 
 You have used Kotlin FHIR Data Capture to process FHIR questionnaires and responses in your app:
 
 *   Display a Questionnaire
 *   Get a Questionnaire Response
 *   Extract FHIR Resources from a QuestionnaireResponse
+*   Add validation and skip logic to a Questionnaire
 
 That is all you need to get it up and running!
 
@@ -746,6 +1007,8 @@ That is all you need to get it up and running!
 *   How to add Kotlin FHIR Data Capture to your Kotlin Multiplatform app
 *   How to use the `Questionnaire` composable and `TemplateExtractionEngine` to work with FHIR
     questionnaires
+*   How `required`, `enableWhen` and the `minValue` and `regex` extensions put the rules of a form
+    in the Questionnaire itself
 
 ### Next Steps
 
@@ -779,6 +1042,7 @@ The other platforms need tools the lab does not have. To try them, follow the [p
 | Nothing appears in the Output tab | Click **Submit** again after the app has reloaded. Step 5 must be built for anything to print. The App preview tab and the Editor must also be open in the same browser, because the output travels between them through that browser. |
 | The Guide, Build log or Output area is gone | Click its name in the bar at the very bottom of the Editor. |
 | **Open app preview** does nothing | The browser blocked the new tab. Allow pop-ups for the lab address, or open the **App preview** address that `./lab-init.sh` printed. |
+| After step 7 the form is missing, or the new questions are not there | A comma or a bracket is out of place in `questionnaire.json`. Compare the file with the block under **Check your changes** in step 7, or type `step 7` in the **Terminal** tab. |
 | The code is in a state you cannot fix | Type `step reset` in the **Terminal** tab, or `step` with the number of the last step you finished. |
 | The Editor asks for the password again | Run `./lab-init.sh --info` in the Heropa terminal. It prints the same password without restarting anything. |
 | You came back and the tabs do not load | The VM was stopped. Start it in Heropa, wait a minute and reload the tabs. If they still do not load, run `./lab-init.sh` in its terminal and read **Since the last run** in what it prints. When that says `CHANGED`, open the new addresses. See **Find your addresses again**. |

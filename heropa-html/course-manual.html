@@ -14,6 +14,8 @@ responses. The same code runs on Android, iOS, Desktop (JVM) and Web (Wasm and J
 <li>How to display a Questionnaire</li>
 <li>How to get answers as a QuestionnaireResponse</li>
 <li>How to extract FHIR resources from a QuestionnaireResponse</li>
+<li>How to add validation and skip logic to a Questionnaire</li>
+<li>How to design a question in a form builder and add it to a Questionnaire</li>
 </ul>
 <h3>What you'll need</h3>
 <p>On the lab you need only a recent version of Chrome, Edge, Brave, Firefox or Safari. The app uses WebAssembly features that older browsers lack.</p>
@@ -487,12 +489,12 @@ your app!</p>
 <td style="border: 1px solid #333; padding: 8px;">Adds every import the code in <code>App.kt</code> needs and removes the wrong <code>Questionnaire</code> import. This is the closest thing to what Android Studio does.</td>
 </tr>
 <tr>
-<td style="border: 1px solid #333; padding: 8px;"><code>step 3</code>, <code>step 4</code>, <code>step 5</code> or <code>step 6</code>, typed in the <strong>Terminal</strong> tab</td>
-<td style="border: 1px solid #333; padding: 8px;">Replaces both files with a working version of the code as it stands at the end of that step</td>
+<td style="border: 1px solid #333; padding: 8px;"><code>step 3</code>, <code>step 4</code>, <code>step 5</code>, <code>step 6</code> or <code>step 7</code>, typed in the <strong>Terminal</strong> tab</td>
+<td style="border: 1px solid #333; padding: 8px;">Replaces the two code files and the questionnaire with a working version as they stand at the end of that step</td>
 </tr>
 <tr>
 <td style="border: 1px solid #333; padding: 8px;"><code>step reset</code>, typed in the <strong>Terminal</strong> tab</td>
-<td style="border: 1px solid #333; padding: 8px;">Puts both files back to the starter code</td>
+<td style="border: 1px solid #333; padding: 8px;">Puts the two code files and the questionnaire back to the starter versions</td>
 </tr>
 </tbody>
 </table>
@@ -840,12 +842,275 @@ this case a single Patient resource.</p>
 </ol>
 <p>It is a FHIR Bundle of type <code>transaction</code> holding one Patient, with the names you typed.</p>
 <p>If you would rather jump to the finished code, type <code>step 6</code> in the <strong>Terminal</strong> tab.</p>
-<h2>7. Congratulations!</h2>
+<h2>7. Add validation and skip logic to the questionnaire</h2>
+<p>So far the form accepts whatever you type, and it always shows the same questions. In this step you change both, without touching the Kotlin code. Everything you add goes into <code>questionnaire.json</code>. The library reads the file and does the rest.</p>
+<p>This is the main idea behind a FHIR Questionnaire. The rules of a form live in the form's own definition, so the same file behaves the same way in every app that shows it.</p>
+<p>You add four rules by hand. At the end of the step you add one more question with a form builder, a tool that writes the JSON for you.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Rule</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Where it goes</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it does in the app</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">A required answer</td>
+<td style="border: 1px solid #333; padding: 8px;">First Name and Family Name</td>
+<td style="border: 1px solid #333; padding: 8px;">The form reports an error when a name is empty</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">A lowest allowed value</td>
+<td style="border: 1px solid #333; padding: 8px;">Date of Birth</td>
+<td style="border: 1px solid #333; padding: 8px;">A date before the year 1900 is refused</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Skip logic</td>
+<td style="border: 1px solid #333; padding: 8px;">A new yes or no question, and a new Phone number question</td>
+<td style="border: 1px solid #333; padding: 8px;">Phone number is shown only after you answer Yes</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">A pattern the answer must match</td>
+<td style="border: 1px solid #333; padding: 8px;">Phone number</td>
+<td style="border: 1px solid #333; padding: 8px;">Anything other than ten digits is refused</td>
+</tr>
+</tbody>
+</table>
+<p>In FHIR the first rule is the <code>required</code> element and the third is the <code>enableWhen</code> element. The second and the fourth are extensions, named <a href="https://hl7.org/fhir/R4/extension-minvalue.html">minValue</a> and <a href="https://hl7.org/fhir/R4/extension-regex.html">regex</a>.</p>
+<p>Open <code>questionnaire.json</code> the same way as in step 6. In the Explorer, open <code>shared</code>, then <code>src</code>, then <code>commonMain</code>, then <code>composeResources</code>, then <code>files</code>, and click the file. Press Ctrl+F to find each line the steps name.</p>
+<p style="border-left: 4px solid #4a90d9; background: #eef5fc; padding: 8px 12px;"><strong>Keep every comma.</strong> JSON separates the parts of a list with commas, and one missing or extra comma breaks the whole file. Each block below already has the commas it needs, so paste it as it is. How far a line is indented does not matter.</p>
+<h3>Make the two names required</h3>
+<ol>
+<li>
+<p>Find the line <code>&quot;linkId&quot;: &quot;PR-name-given&quot;,</code>. It belongs to the First Name question.</p>
+</li>
+<li>
+<p>Click at the end of that line, press Enter and paste this line.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">&quot;required&quot;: true,
+</code></pre>
+</li>
+<li>
+<p>Find the line <code>&quot;linkId&quot;: &quot;PR-name-family&quot;,</code> and paste the same line under it.</p>
+</li>
+</ol>
+<h3>Set the earliest date of birth</h3>
+<ol>
+<li>
+<p>Find the line <code>&quot;linkId&quot;: &quot;PR-birthdate&quot;,</code>.</p>
+</li>
+<li>
+<p>Click at the end of that line, press Enter and paste this block.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">&quot;extension&quot;: [
+  {
+    &quot;url&quot;: &quot;http://hl7.org/fhir/StructureDefinition/minValue&quot;,
+    &quot;valueDate&quot;: &quot;1900-01-01&quot;
+  }
+],
+</code></pre>
+</li>
+</ol>
+<h3>Add a question that is shown only when it is needed</h3>
+<ol>
+<li>
+<p>Find the line <code>&quot;text&quot;: &quot;Date of Birth&quot;</code>. The line under it holds only <code>},</code> and closes the Date of Birth question.</p>
+</li>
+<li>
+<p>Click at the end of that <code>},</code> line, press Enter and paste this block. It adds two questions.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">{
+  &quot;linkId&quot;: &quot;PR-has-phone&quot;,
+  &quot;type&quot;: &quot;boolean&quot;,
+  &quot;text&quot;: &quot;Does the patient have a phone number?&quot;
+},
+{
+  &quot;linkId&quot;: &quot;PR-phone&quot;,
+  &quot;type&quot;: &quot;string&quot;,
+  &quot;text&quot;: &quot;Phone number&quot;,
+  &quot;required&quot;: true,
+  &quot;enableWhen&quot;: [
+    {
+      &quot;question&quot;: &quot;PR-has-phone&quot;,
+      &quot;operator&quot;: &quot;=&quot;,
+      &quot;answerBoolean&quot;: true
+    }
+  ],
+  &quot;extension&quot;: [
+    {
+      &quot;url&quot;: &quot;http://hl7.org/fhir/StructureDefinition/regex&quot;,
+      &quot;valueString&quot;: &quot;^[0-9]{10}$&quot;
+    }
+  ]
+},
+</code></pre>
+</li>
+</ol>
+<p>The first question is a yes or no question. The second one carries the skip logic in <code>enableWhen</code>, which names the question to watch, <code>PR-has-phone</code>, and the answer that switches it on, <code>true</code>. The pattern <code>^[0-9]{10}$</code> means exactly ten digits. Phone number is required as well, and that rule applies only while the question is shown.</p>
+<h3>Check your changes</h3>
+<p>The questions from Name down to Phone number now read as follows. The lines above and below them are unchanged.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">{
+  &quot;linkId&quot;: &quot;PR-name&quot;,
+  &quot;type&quot;: &quot;group&quot;,
+  &quot;text&quot;: &quot;Name&quot;,
+  &quot;definition&quot;: &quot;http://hl7.org/fhir/StructureDefinition/Patient#Patient.name&quot;,
+  &quot;item&quot;: [
+    {
+      &quot;linkId&quot;: &quot;PR-name-given&quot;,
+      &quot;required&quot;: true,
+      &quot;definition&quot;: &quot;http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given&quot;,
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;text&quot;: &quot;First Name&quot;
+    },
+    {
+      &quot;linkId&quot;: &quot;PR-name-family&quot;,
+      &quot;required&quot;: true,
+      &quot;definition&quot;: &quot;http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family&quot;,
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;text&quot;: &quot;Family Name&quot;
+    }
+  ]
+},
+{
+  &quot;linkId&quot;: &quot;PR-birthdate&quot;,
+  &quot;extension&quot;: [
+    {
+      &quot;url&quot;: &quot;http://hl7.org/fhir/StructureDefinition/minValue&quot;,
+      &quot;valueDate&quot;: &quot;1900-01-01&quot;
+    }
+  ],
+  &quot;definition&quot;: &quot;http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate&quot;,
+  &quot;type&quot;: &quot;date&quot;,
+  &quot;text&quot;: &quot;Date of Birth&quot;
+},
+{
+  &quot;linkId&quot;: &quot;PR-has-phone&quot;,
+  &quot;type&quot;: &quot;boolean&quot;,
+  &quot;text&quot;: &quot;Does the patient have a phone number?&quot;
+},
+{
+  &quot;linkId&quot;: &quot;PR-phone&quot;,
+  &quot;type&quot;: &quot;string&quot;,
+  &quot;text&quot;: &quot;Phone number&quot;,
+  &quot;required&quot;: true,
+  &quot;enableWhen&quot;: [
+    {
+      &quot;question&quot;: &quot;PR-has-phone&quot;,
+      &quot;operator&quot;: &quot;=&quot;,
+      &quot;answerBoolean&quot;: true
+    }
+  ],
+  &quot;extension&quot;: [
+    {
+      &quot;url&quot;: &quot;http://hl7.org/fhir/StructureDefinition/regex&quot;,
+      &quot;valueString&quot;: &quot;^[0-9]{10}$&quot;
+    }
+  ]
+},
+</code></pre>
+<h3>Run it</h3>
+<ol>
+<li>Save <code>questionnaire.json</code> with Ctrl+S and wait for <code>BUILD OK</code> in the Build log. No Kotlin code changed, and the lab still builds the app, because the file is packed into it.</li>
+<li>Switch to the App preview tab. Leave the form empty and click <strong>Submit</strong>. A box named <strong>Errors found</strong> lists First Name and Family Name. Click <strong>Fix questions</strong>. Both fields are now marked in red with the words <code>Missing answer for required field.</code></li>
+<li>Click in <strong>Date of Birth</strong> and type <code>01011850</code>. The field turns red and says <code>Minimum value allowed is:1900-01-01</code>. Type a date after 1900 and the message goes away.</li>
+<li>Under <strong>Does the patient have a phone number?</strong> click <strong>Yes</strong>. The Phone number question appears. Click <strong>No</strong> and it disappears. Click <strong>Yes</strong> again.</li>
+<li>Type <code>123</code> in <strong>Phone number</strong> and click anywhere outside the field. The field turns red and says the answer does not match the regular expression. Type ten digits, such as <code>0712345678</code>, and the message goes away.</li>
+<li>Type a first name and a family name, then click <strong>Submit</strong>.</li>
+<li>Switch back to the Editor tab and open the <code>response</code> entry in the <strong>Output</strong> tab. It has two new answers, under <code>PR-has-phone</code> and <code>PR-phone</code>.</li>
+</ol>
+<p>Open the <code>extraction result</code> entry as well. The Patient has the names and the date of birth, and no phone number. Extraction copies only what the template inside the questionnaire names, and that template does not mention the phone yet.</p>
+<h3>Add a question with a form builder</h3>
+<p>Writing JSON by hand works for a small change. For anything larger, the people who design questionnaires use a form builder. That is a page where you put a form together with the mouse, and it writes the JSON for you. This part uses the <a href="https://skjemabygger.helsenorge.no/">Helsenorge form builder</a>, made by the Norwegian health service. It is free, runs in your browser and needs no account. You use it to add a Gender question with three choices.</p>
+<p style="border-left: 4px solid #4a90d9; background: #eef5fc; padding: 8px 12px;"><strong>Do not replace your file with the one the form builder makes.</strong> The form builder leaves out the <code>contained</code> part of the questionnaire, which holds the template step 6 uses to extract the Patient. It also gives the questionnaire a new <code>url</code>. You copy one question out of the form builder instead.</p>
+<h4>Open your questionnaire in the form builder</h4>
+<ol>
+<li>In the Explorer of the Editor, right-click <code>questionnaire.json</code> and choose <strong>Download</strong>. Your browser saves the file on your computer.</li>
+<li>Open <a href="https://skjemabygger.helsenorge.no/">skjemabygger.helsenorge.no</a> in a new browser tab.</li>
+<li>Click <strong>Upload questionnaire</strong> and pick the file you downloaded.</li>
+</ol>
+<p>The form builder shows your questionnaire as a list of questions. The picture below was taken after the Gender question was added.</p>
+<p><img src="images/form-builder-form.jpg" alt="The questionnaire in the Helsenorge form builder, with the Gender question under Date of Birth" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /></p>
+<p>You can see the rules you added by hand. First Name, Family Name and Phone number carry a <strong>Required</strong> mark, and the small icon beside Phone number stands for its skip logic. The row marked as hidden is a question the starter file hides from the form.</p>
+<p>The page opens in English or Norwegian. To change it, open the menu behind the three dots at the top right and pick the entry that names the other language.</p>
+<h4>Add the Gender question</h4>
+<ol>
+<li>Find <strong>Choice</strong> in the <strong>Components</strong> list on the left. Drag it into the list of questions and drop it just under <strong>Date of Birth</strong>. If it lands inside another question, drag it again until it sits on the same level as Date of Birth.</li>
+<li>Click the new row. A panel opens on the right.</li>
+<li>In <strong>Text</strong>, type <code>Gender</code>.</li>
+<li>Under <strong>Display type</strong>, choose <strong>Radio buttons</strong>.</li>
+<li>Each row under <strong>System</strong> is one choice, with a title on the left and a value on the right. Fill the two rows with <code>Female</code> and <code>female</code>, then <code>Male</code> and <code>male</code>.</li>
+<li>Click <strong>Add option</strong> and fill the new row with <code>Other</code> and <code>other</code>.</li>
+<li>Check that the three values read <code>female</code>, <code>male</code> and <code>other</code>, and correct any that differ.</li>
+<li>Close the panel with the cross at its top left.</li>
+</ol>
+<p><img src="images/form-builder-question.jpg" alt="The Gender question open in the form builder, with radio buttons chosen and three options" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /></p>
+<h4>Copy the question into your file</h4>
+<ol>
+<li>Open the menu behind the three dots at the top right and choose <strong>JSON</strong>. The form builder shows the whole questionnaire as JSON.</li>
+<li>Find the line <code>&quot;text&quot;: &quot;Gender&quot;</code>. The question is the block around that line. It starts at the <code>{</code> just above its <code>&quot;linkId&quot;</code> line and ends at the <code>}</code> just above the block for <code>PR-has-phone</code>.</li>
+<li>Select that block and copy it.</li>
+<li>Go back to <code>questionnaire.json</code> in the Editor and find the line <code>&quot;text&quot;: &quot;Date of Birth&quot;</code>. The line under it holds only <code>},</code>.</li>
+<li>Click at the end of that <code>},</code> line, press Enter and paste the block.</li>
+<li>Type a comma after the last <code>}</code> of the block you pasted.</li>
+</ol>
+<p>The block you pasted reads like the one below. Yours has longer values for <code>linkId</code> and <code>system</code>, and an <code>id</code> line in each choice, because the form builder makes those up. They work as they are. The one below is the same question with shorter names, and you can paste it in place of your own if you prefer.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">{
+  &quot;linkId&quot;: &quot;PR-gender&quot;,
+  &quot;type&quot;: &quot;choice&quot;,
+  &quot;text&quot;: &quot;Gender&quot;,
+  &quot;extension&quot;: [
+    {
+      &quot;url&quot;: &quot;http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl&quot;,
+      &quot;valueCodeableConcept&quot;: {
+        &quot;coding&quot;: [
+          {
+            &quot;system&quot;: &quot;http://hl7.org/fhir/ValueSet/questionnaire-item-control&quot;,
+            &quot;code&quot;: &quot;radio-button&quot;
+          }
+        ]
+      }
+    }
+  ],
+  &quot;answerOption&quot;: [
+    {
+      &quot;valueCoding&quot;: {
+        &quot;system&quot;: &quot;http://example.org/gender&quot;,
+        &quot;code&quot;: &quot;female&quot;,
+        &quot;display&quot;: &quot;Female&quot;
+      }
+    },
+    {
+      &quot;valueCoding&quot;: {
+        &quot;system&quot;: &quot;http://example.org/gender&quot;,
+        &quot;code&quot;: &quot;male&quot;,
+        &quot;display&quot;: &quot;Male&quot;
+      }
+    },
+    {
+      &quot;valueCoding&quot;: {
+        &quot;system&quot;: &quot;http://example.org/gender&quot;,
+        &quot;code&quot;: &quot;other&quot;,
+        &quot;display&quot;: &quot;Other&quot;
+      }
+    }
+  ]
+},
+</code></pre>
+<p>Three parts of the block do the work. The <code>type</code> of <code>choice</code> says the answer comes from a list. Each entry under <code>answerOption</code> is one choice, with the <code>code</code> that is saved and the <code>display</code> text shown on the form. The <code>questionnaire-itemControl</code> extension asks for radio buttons.</p>
+<h4>Run it again</h4>
+<ol>
+<li>Save <code>questionnaire.json</code> and wait for <code>BUILD OK</code> in the Build log.</li>
+<li>Switch to the App preview tab. A <strong>Gender</strong> question with three choices now sits under Date of Birth.</li>
+<li>Choose one, fill in the names and click <strong>Submit</strong>.</li>
+<li>In the <strong>Output</strong> tab, open the <code>response</code> entry. The Gender answer is a <code>valueCoding</code> that holds the <code>code</code> and the <code>display</code> of your choice.</li>
+</ol>
+<p>The <code>extraction result</code> has no gender, for the same reason it has no phone number. The template does not name it.</p>
+<p>If the form does not appear, or the questions are not the ones described here, a comma or a bracket is out of place in <code>questionnaire.json</code>. Compare your file with the block under <em>Check your changes</em>. If you would rather jump to a working version, type <code>step 7</code> in the <strong>Terminal</strong> tab.</p>
+<h2>8. Congratulations!</h2>
 <p style="border-left: 4px solid #2e7d32; background: #e8f5e9; padding: 8px 12px;">You have used Kotlin FHIR Data Capture to process FHIR questionnaires and responses in your app:</p>
 <ul>
 <li>Display a Questionnaire</li>
 <li>Get a Questionnaire Response</li>
 <li>Extract FHIR Resources from a QuestionnaireResponse</li>
+<li>Add validation and skip logic to a Questionnaire</li>
 </ul>
 <p>That is all you need to get it up and running!</p>
 <h3>What we've covered</h3>
@@ -853,6 +1118,8 @@ this case a single Patient resource.</p>
 <li>How to add Kotlin FHIR Data Capture to your Kotlin Multiplatform app</li>
 <li>How to use the <code>Questionnaire</code> composable and <code>TemplateExtractionEngine</code> to work with FHIR
 questionnaires</li>
+<li>How <code>required</code>, <code>enableWhen</code> and the <code>minValue</code> and <code>regex</code> extensions put the rules of a form
+in the Questionnaire itself</li>
 </ul>
 <h3>Next Steps</h3>
 <ul>
@@ -932,6 +1199,10 @@ features the library supports</li>
 <tr>
 <td style="border: 1px solid #333; padding: 8px;"><strong>Open app preview</strong> does nothing</td>
 <td style="border: 1px solid #333; padding: 8px;">The browser blocked the new tab. Allow pop-ups for the lab address, or open the <strong>App preview</strong> address that <code>./lab-init.sh</code> printed.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">After step 7 the form is missing, or the new questions are not there</td>
+<td style="border: 1px solid #333; padding: 8px;">A comma or a bracket is out of place in <code>questionnaire.json</code>. Compare the file with the block under <em>Check your changes</em> in step 7, or type <code>step 7</code> in the <strong>Terminal</strong> tab.</td>
 </tr>
 <tr>
 <td style="border: 1px solid #333; padding: 8px;">The code is in a state you cannot fix</td>
