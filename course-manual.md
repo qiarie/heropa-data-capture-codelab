@@ -221,7 +221,9 @@ The questionnaire is stored as a
 [Compose Multiplatform resource](https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform-resources.html)
 at `shared/src/commonMain/composeResources/files/questionnaire.json`, so every platform can read it.
 
-A path such as `shared/build.gradle.kts` tells you which folders to open in the Explorer, from left to right. Click a folder to open it, and click a file to show it in the Code area.
+The three files you work in are already open when the Editor starts. They are tabs along the top of the Code area, in the order `build.gradle.kts`, `App.kt`, `questionnaire.json`. Click a tab to show its file.
+
+If you closed a tab, open the file again from the Explorer. A path such as `shared/build.gradle.kts` tells you which folders to open in the Explorer, from left to right. Click a folder to open it, and click a file to show it in the Code area.
 
 **To open `shared/build.gradle.kts`**
 
@@ -232,7 +234,7 @@ The project has two files named `build.gradle.kts`. The other one sits lower in 
 
 **To open `shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt`**
 
-This file is already open when the Editor starts. If you closed it, open `shared`, then `src`, then `commonMain`, then the folder shown as `kotlin/dev/ohs/fhir/codelab`, and click `App.kt`.
+Open `shared`, then `src`, then `commonMain`, then the folder shown as `kotlin/dev/ohs/fhir/codelab`, and click `App.kt`.
 
 ### Import the app into Android Studio
 
@@ -359,7 +361,7 @@ following line below the `// 3 Add the dependency for Kotlin FHIR Data Capture` 
 
 Do this in the Editor tab.
 
-1. Open `shared/build.gradle.kts`. In the Explorer, click the `shared` folder, then the `build.gradle.kts` file inside it. The line of small text above the code must read `shared > build.gradle.kts`.
+1. Go to `shared/build.gradle.kts`. It is the first tab in the Code area. If you closed it, go to the Explorer, click the `shared` folder, then the `build.gradle.kts` file inside it. The line of small text above the code must read `shared > build.gradle.kts`.
 2. Find the comment `// 3 Add the dependency for Kotlin FHIR Data Capture`. It is on line 46.
 3. Click at the end of that comment line and press Enter to make a new line under it.
 4. Paste this one line.
@@ -418,7 +420,7 @@ val scope = rememberCoroutineScope()
 
 Start with the three imports this step needs. The web editor does not add imports for you, so you paste them in yourself, before any other code.
 
-1. Go to `shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt`. It is the other tab in the Code area.
+1. Go to `shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt`. It is the second tab in the Code area.
 2. Find the `// 4 Imports for the Questionnaire composable` comment. It is on line 52, just under the import lines. You can also press Ctrl+F and type `// 4 Imports`.
 3. Replace that comment with the following code. The first line puts the comment back, so the imports end up right under it.
 
@@ -672,7 +674,7 @@ extension. These are for
 [Definition-based extraction](https://hl7.org/fhir/uv/sdc/STU4/extraction.html#definition-extract),
 which the library doesn't support, so they are ignored.
 
-To open `questionnaire.json`, go to the Explorer and open `shared`, then `src`, then `commonMain`, then `composeResources`, then `files`, and click the file. You only read it in this step. Do not change it.
+To see `questionnaire.json`, click its tab, the third one in the Code area. If you closed it, go to the Explorer and open `shared`, then `src`, then `commonMain`, then `composeResources`, then `files`, and click the file. You only read it in this step. Do not change it.
 
 This step needs two imports. In `App.kt`, find the `// 6 Imports for extracting FHIR resources` comment, which sits under the import you added in step 5. You can also press Ctrl+F and type `// 6 Imports`. Replace that comment with the following code.
 
@@ -750,7 +752,7 @@ You add four rules by hand. At the end of the step you add one more question wit
 
 In FHIR the first rule is the `required` element and the third is the `enableWhen` element. The second and the fourth are extensions, named [minValue](https://hl7.org/fhir/R4/extension-minvalue.html) and [regex](https://hl7.org/fhir/R4/extension-regex.html).
 
-Open `questionnaire.json` the same way as in step 6. In the Explorer, open `shared`, then `src`, then `commonMain`, then `composeResources`, then `files`, and click the file. Press Ctrl+F to find each line the steps name.
+Go to `questionnaire.json` the same way as in step 6, by its tab in the Code area. If you closed it, go to the Explorer, open `shared`, then `src`, then `commonMain`, then `composeResources`, then `files`, and click the file. Press Ctrl+F to find each line the steps name.
 
 **Keep every comma.** JSON separates the parts of a list with commas, and one missing or extra comma breaks the whole file. Each block below already has the commas it needs, so paste it as it is. How far a line is indented does not matter.
 

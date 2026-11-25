@@ -27,7 +27,13 @@ const fs = require('fs');
 const { execFile } = require('child_process');
 
 const GUIDE = process.env.CODELAB_GUIDE || '/opt/codelab/guide/course-manual.md';
-const APP_FILE = (process.env.CODELAB_DIR || '') + '/shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt';
+// The files a learner edits, in the order the manual reaches them. They open
+// as tabs in this order and the first one is left in front.
+const CODE_FILES = [
+  'shared/build.gradle.kts',
+  'shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt',
+  'shared/src/commonMain/composeResources/files/questionnaire.json',
+].map((file) => (process.env.CODELAB_DIR || '') + '/' + file);
 const LAB_URL = (process.env.LAB_URL || '').replace(/\/+$/, '');
 const REDUCED = process.env.LAB_MODE === 'reduced';
 const GUIDE_EDITOR = 'vscode.markdown.preview.editor';
@@ -116,8 +122,14 @@ async function arrange(want) {
   const needTerminal = want.terminal && !terminalIsOpen();
   if (!needGuide && !needBuild && !needOutput && !needTerminal) return;
 
-  if (!vscode.window.activeTextEditor && fs.existsSync(APP_FILE)) {
-    await vscode.window.showTextDocument(vscode.Uri.file(APP_FILE), { viewColumn: COLUMN.code, preview: false });
+  if (!vscode.window.activeTextEditor) {
+    const files = CODE_FILES.filter((file) => fs.existsSync(file));
+    for (const file of files) {
+      await vscode.window.showTextDocument(vscode.Uri.file(file), { viewColumn: COLUMN.code, preview: false });
+    }
+    if (files.length > 1) {
+      await vscode.window.showTextDocument(vscode.Uri.file(files[0]), { viewColumn: COLUMN.code, preview: false });
+    }
   }
   await vscode.commands.executeCommand('vscode.setEditorLayout', LAYOUT);
 

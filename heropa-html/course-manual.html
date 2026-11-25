@@ -317,7 +317,8 @@ step of the codelab adds the code.</p>
 <p>The questionnaire is stored as a
 <a href="https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform-resources.html">Compose Multiplatform resource</a>
 at <code>shared/src/commonMain/composeResources/files/questionnaire.json</code>, so every platform can read it.</p>
-<p>A path such as <code>shared/build.gradle.kts</code> tells you which folders to open in the Explorer, from left to right. Click a folder to open it, and click a file to show it in the Code area.</p>
+<p>The three files you work in are already open when the Editor starts. They are tabs along the top of the Code area, in the order <code>build.gradle.kts</code>, <code>App.kt</code>, <code>questionnaire.json</code>. Click a tab to show its file.</p>
+<p>If you closed a tab, open the file again from the Explorer. A path such as <code>shared/build.gradle.kts</code> tells you which folders to open in the Explorer, from left to right. Click a folder to open it, and click a file to show it in the Code area.</p>
 <h4>To open <code>shared/build.gradle.kts</code></h4>
 <ol>
 <li>In the Explorer, click the <code>shared</code> folder to open it.</li>
@@ -325,7 +326,7 @@ at <code>shared/src/commonMain/composeResources/files/questionnaire.json</code>,
 </ol>
 <p>The project has two files named <code>build.gradle.kts</code>. The other one sits lower in the Explorer, outside every folder, and it is the wrong one. Check the line of small text above the code. It must read <code>shared &gt; build.gradle.kts</code>.</p>
 <h4>To open <code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code></h4>
-<p>This file is already open when the Editor starts. If you closed it, open <code>shared</code>, then <code>src</code>, then <code>commonMain</code>, then the folder shown as <code>kotlin/dev/ohs/fhir/codelab</code>, and click <code>App.kt</code>.</p>
+<p>Open <code>shared</code>, then <code>src</code>, then <code>commonMain</code>, then the folder shown as <code>kotlin/dev/ohs/fhir/codelab</code>, and click <code>App.kt</code>.</p>
 <h3>Import the app into Android Studio</h3>
 <p>There is nothing to import on the lab. The Editor tab takes the place of Android Studio, and the project is already open in it.</p>
 <h3>Run the starter app</h3>
@@ -507,7 +508,7 @@ following line below the <code>// 3 Add the dependency for Kotlin FHIR Data Capt
 <p>Do this in the Editor tab.</p>
 <ol>
 <li>
-<p>Open <code>shared/build.gradle.kts</code>. In the Explorer, click the <code>shared</code> folder, then the <code>build.gradle.kts</code> file inside it. The line of small text above the code must read <code>shared &gt; build.gradle.kts</code>.</p>
+<p>Go to <code>shared/build.gradle.kts</code>. It is the first tab in the Code area. If you closed it, go to the Explorer, click the <code>shared</code> folder, then the <code>build.gradle.kts</code> file inside it. The line of small text above the code must read <code>shared &gt; build.gradle.kts</code>.</p>
 </li>
 <li>
 <p>Find the comment <code>// 3 Add the dependency for Kotlin FHIR Data Capture</code>. It is on line 46.</p>
@@ -562,7 +563,7 @@ val scope = rememberCoroutineScope()
 <p>Start with the three imports this step needs. The web editor does not add imports for you, so you paste them in yourself, before any other code.</p>
 <ol>
 <li>
-<p>Go to <code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code>. It is the other tab in the Code area.</p>
+<p>Go to <code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code>. It is the second tab in the Code area.</p>
 </li>
 <li>
 <p>Find the <code>// 4 Imports for the Questionnaire composable</code> comment. It is on line 52, just under the import lines. You can also press Ctrl+F and type <code>// 4 Imports</code>.</p>
@@ -791,7 +792,7 @@ extracted resource as they are.</p>
 extension. These are for
 <a href="https://hl7.org/fhir/uv/sdc/STU4/extraction.html#definition-extract">Definition-based extraction</a>,
 which the library doesn't support, so they are ignored.</p>
-<p>To open <code>questionnaire.json</code>, go to the Explorer and open <code>shared</code>, then <code>src</code>, then <code>commonMain</code>, then <code>composeResources</code>, then <code>files</code>, and click the file. You only read it in this step. Do not change it.</p>
+<p>To see <code>questionnaire.json</code>, click its tab, the third one in the Code area. If you closed it, go to the Explorer and open <code>shared</code>, then <code>src</code>, then <code>commonMain</code>, then <code>composeResources</code>, then <code>files</code>, and click the file. You only read it in this step. Do not change it.</p>
 <p>This step needs two imports. In <code>App.kt</code>, find the <code>// 6 Imports for extracting FHIR resources</code> comment, which sits under the import you added in step 5. You can also press Ctrl+F and type <code>// 6 Imports</code>. Replace that comment with the following code.</p>
 <pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">// 6 Imports for extracting FHIR resources
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
@@ -878,7 +879,7 @@ this case a single Patient resource.</p>
 </tbody>
 </table>
 <p>In FHIR the first rule is the <code>required</code> element and the third is the <code>enableWhen</code> element. The second and the fourth are extensions, named <a href="https://hl7.org/fhir/R4/extension-minvalue.html">minValue</a> and <a href="https://hl7.org/fhir/R4/extension-regex.html">regex</a>.</p>
-<p>Open <code>questionnaire.json</code> the same way as in step 6. In the Explorer, open <code>shared</code>, then <code>src</code>, then <code>commonMain</code>, then <code>composeResources</code>, then <code>files</code>, and click the file. Press Ctrl+F to find each line the steps name.</p>
+<p>Go to <code>questionnaire.json</code> the same way as in step 6, by its tab in the Code area. If you closed it, go to the Explorer, open <code>shared</code>, then <code>src</code>, then <code>commonMain</code>, then <code>composeResources</code>, then <code>files</code>, and click the file. Press Ctrl+F to find each line the steps name.</p>
 <p style="border-left: 4px solid #4a90d9; background: #eef5fc; padding: 8px 12px;"><strong>Keep every comma.</strong> JSON separates the parts of a list with commas, and one missing or extra comma breaks the whole file. Each block below already has the commas it needs, so paste it as it is. How far a line is indented does not matter.</p>
 <h3>Make the two names required</h3>
 <ol>

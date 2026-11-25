@@ -26,6 +26,27 @@ esac
 # older version of it. Installing again replaces it and takes a second.
 code-server --install-extension /opt/codelab/codelab-guide.vsix --force >/dev/null 2>&1 || true
 
+# The same goes for the editor settings, which live in the volume. Every
+# setting the lab defines is written again, and a setting the learner added
+# is kept. A file that cannot be read is left alone.
+/usr/lib/code-server/lib/node -e '
+const fs = require("fs");
+const [lab, mine] = process.argv.slice(1);
+const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
+let current = {};
+if (fs.existsSync(mine)) current = read(mine);
+fs.mkdirSync(require("path").dirname(mine), { recursive: true });
+fs.writeFileSync(mine, JSON.stringify({ ...current, ...read(lab) }, null, 2) + "\n");
+' /opt/codelab/settings.json "$HOME/.local/share/code-server/User/settings.json" >/dev/null 2>&1 || true
+
+# The checkout lives in the volume too. A volume made before the lab turned
+# on incremental Wasm builds lacks that line, and every build then takes
+# several times longer. The line is added when it is missing.
+PROPS="$CODELAB_DIR/gradle.properties"
+if [[ -f "$PROPS" ]] && ! grep -q '^kotlin\.incremental\.wasm=' "$PROPS"; then
+    printf '\n# Added by the lab. Rebuilds only what an edit changed.\nkotlin.incremental.wasm=true\n' >> "$PROPS"
+fi
+
 LOG="$HOME/build.log"
 : > "$LOG"
 

@@ -30,7 +30,7 @@ Learners work in two browser tabs, the Editor and the App preview. The editor op
 
 | Area | Where | What it shows |
 |---|---|---|
-| Code | Top centre, about three fifths of the width | `App.kt`, already open |
+| Code | Top centre, about three fifths of the width | `shared/build.gradle.kts`, `App.kt` and `questionnaire.json`, already open as tabs in that order |
 | Build log | Under the code | Each build, its errors and plain advice for the common ones |
 | Output | A tab next to the build log | What the app prints, with the JSON formatted. This is where learners read the QuestionnaireResponse and the extracted Bundle. |
 | Terminal | A tab next to the output | An ordinary shell |

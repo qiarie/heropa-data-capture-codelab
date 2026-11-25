@@ -88,6 +88,10 @@ RUN jar --create --no-manifest --file /opt/codelab/codelab-guide.vsix -C /opt/co
 USER learner
 RUN code-server --install-extension /opt/codelab/codelab-guide.vsix
 
+# A second copy of the editor settings, outside the home folder. The entry
+# point uses it to bring a volume made by an older image up to date.
+COPY ide/settings.json /opt/codelab/settings.json
+
 COPY --chmod=755 bin/ /usr/local/bin/
 
 EXPOSE 8080
