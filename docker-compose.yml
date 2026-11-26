@@ -1,9 +1,9 @@
 # The codelab lab. The workspace holds the code, the build and the editor.
 # nginx is the only thing published, and it gives each part a path.
 #
-#   /       a start page with links to the two below
-#   /ide/   the editor
-#   /app/   the web app the learner is building
+#   /          a start page with links to the two below
+#   /ide/      the editor
+#   /preview/  the web app the learner is building, with a toolbar
 #
 # Start it with ./lab-init.sh, which writes .env and the certificate first.
 
@@ -22,8 +22,8 @@ services:
       # password or none. With none the editor asks for nothing, and the
       # password above is kept only so the switch can be turned back.
       IDE_AUTH: ${IDE_AUTH:-password}
-      # The address the learner's browser uses, which the editor's App pane
-      # needs to load the app.
+      # The address the learner's browser uses, which the editor needs
+      # for the Build log, the Output and the Open app preview button.
       LAB_URL: ${LAB_URL:?Run ./lab-init.sh, which works out the lab address}
       # full when the browser trusts the lab's certificate. reduced when the
       # certificate is self-signed, where the editor leaves out the panes

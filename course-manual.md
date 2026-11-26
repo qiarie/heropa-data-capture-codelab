@@ -45,7 +45,7 @@ paste. If you haven't built a Kotlin Multiplatform app before, you can start by
 2. Start the lab.
 
    ```bash
-   cd ~/sdc-codelab
+   cd ~/heropa-data-capture-codelab
    ./lab-init.sh
    ```
 
@@ -85,7 +85,7 @@ You work in two browser tabs, one for the Editor and one for the App preview.
 
 If you have room, put the two tabs side by side in separate windows.
 
-The Editor tab has six areas. The last three share the space under the code, and you switch between them by clicking their tabs.
+The Editor tab has six areas. The Build log, the Output and the Terminal share the space under the code, and you switch between them by clicking their tabs.
 
 | Area | Where | What it is for |
 |---|---|---|
@@ -125,7 +125,7 @@ The lab VM stops when you close the course, when you stop it yourself, and when 
 If you only lost the addresses or the password, ask the lab to print them again. Open the terminal of the VM and run these two commands. They answer at once and restart nothing.
 
 ```bash
-cd ~/sdc-codelab
+cd ~/heropa-data-capture-codelab
 ./lab-init.sh --info
 ```
 
@@ -136,7 +136,7 @@ The `--info` option prints the addresses the lab last used. It does not check wh
 3. If they do not load, open the terminal of the VM and run the same two commands you used to start the lab, this time without `--info`.
 
    ```bash
-   cd ~/sdc-codelab
+   cd ~/heropa-data-capture-codelab
    ./lab-init.sh
    ```
 
@@ -168,15 +168,16 @@ Since the last run
 | Editor and App preview addresses | Normally the same. The summary says `CHANGED` when they are not. |
 | Editor password | Always the same |
 | Your code | Always kept as you left it |
-| Build log and Output | Start empty, and fill again at the next build and the next **Submit** |
+| Build log | Starts empty, and fills again at the next build |
+| Output | Keeps its earlier entries when the address is the same. A new address starts it empty, and it fills again at the next **Submit**. |
 
-The command is safe to run at any time and as often as you like. It changes nothing when the address is the same. When the address changed it takes about a minute, because it gets a certificate for the new address.
+The command is safe to run at any time and as often as you like. When the address is the same it takes a few seconds and your code, password and addresses stay as they were. Reload any tab that stopped for a moment. When the address changed it takes about a minute, because it gets a certificate for the new address.
 
 Always copy the addresses from the summary. They are made from the IP address of the VM, normally with dashes instead of dots and `.sslip.io` at the end, so an example IP of `203.0.113.10` would give `https://203-0-113-10.sslip.io/ide/`. Sometimes the summary shows the plain IP, such as `https://203.0.113.10/ide/`, with a note that says why. Those addresses work in exactly the same way.
 
 ### If the lab starts in reduced mode
 
-The Editor needs a certificate that your browser trusts. The lab asks for one each time the address changes. Occasionally it cannot get one, usually because the service that issues them is over its limit. The lab then makes its own certificate and starts in **reduced mode**, and the summary from `./lab-init.sh` opens with the words `REDUCED MODE`. It also gives the reason, the pages to use, and when to try again.
+The Editor needs a certificate that your browser trusts. The lab asks for one each time the address changes. Occasionally it cannot get one, usually because the service that issues them is over its limit. The lab then makes its own certificate and starts in **reduced mode**, and the first line of the summary from `./lab-init.sh` says `REDUCED MODE`. It also gives the reason, the pages to use, and when to try again.
 
 Your code, the build and the app all work in reduced mode. Two things are different.
 
@@ -195,7 +196,7 @@ To get back to full mode, run `./lab-init.sh` again later. When it was refused f
 
 ### Download the Code
 
-There is nothing to download on the lab. The code is already there, and the Editor opens on the `codelabs` folder. The Explorer on the left shows what is inside it.
+There is nothing to download on the lab. The code is already there, and the Editor opens on the `codelabs` folder. The Explorer on the left shows what is inside it. It leaves out the `iosApp` folder, which the lab does not use.
 
 ### Project structure
 
@@ -205,7 +206,7 @@ There is nothing to download on the lab. The code is already there, and the Edit
 | `androidApp` | Android application. `MainActivity` calls `setContent { App() }`.                             |
 | `desktopApp` | Desktop (JVM) application. `main()` opens a window that shows `App()`.                        |
 | `webApp`     | Web application for Wasm and JS. `main()` shows `App()` in the browser page.                  |
-| `iosApp`     | Xcode project for iOS. It shows `App()` through `MainViewController()` in `shared/iosMain`.   |
+| `iosApp`     | Xcode project for iOS. It shows `App()` through `MainViewController()` in `shared/src/iosMain`. |
 
 The platform modules are just entry points. Everything you'll write in this codelab goes into two
 files of the `shared` module:
@@ -230,7 +231,7 @@ If you closed a tab, open the file again from the Explorer. A path such as `shar
 1. In the Explorer, click the `shared` folder to open it.
 2. Click the `build.gradle.kts` file that sits inside `shared`.
 
-The project has two files named `build.gradle.kts`. The other one sits lower in the Explorer, outside every folder, and it is the wrong one. Check the line of small text above the code. It must read `shared > build.gradle.kts`.
+The project has several files named `build.gradle.kts`. One sits lower in the Explorer, outside every folder, and there is one in each of the other app folders. The one you need is inside `shared`. Check the line of small text above the code. It must read `shared > build.gradle.kts`.
 
 **To open `shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt`**
 
@@ -298,6 +299,24 @@ This table shows what takes the place of each thing you know.
 | Tap **Submit** | Click **Submit** |
 | Android Studio prompts you to add the necessary imports | Paste the import lines yourself, under the numbered comment the step names |
 
+### Two ways to put code into your file
+
+A block of code in the Guide has a **Copy** button in its top right corner. A block that only shows sample output has none. Many blocks in steps 3 to 6 also have an **Insert** button next to it.
+
+| Button | What it does |
+|---|---|
+| **Copy** | Copies the code. You then click in your file at the place the step names and paste with Ctrl+V. |
+| **Insert** | Puts the code into your file for you, at the place the step names. It brings the file to the front and selects the new code so you can see what changed. |
+
+Use whichever you like. The steps describe the copy and paste way in full, and **Insert** does the same thing in one click.
+
+- **Insert** does not save the file. Press Ctrl+S afterwards, as each step says, and the build starts.
+- Ctrl+Z takes the code out again.
+- A second click changes nothing. A message says the code is already there.
+- If **Insert** cannot find the place, a message says so. This happens when an earlier step is missing or the line it looks for was changed. Use **Copy** then.
+
+A block that only shows what your file should look like has no **Insert** button. Step 7 has none either, because there you edit the file by hand.
+
 ### What this editor does not do for you
 
 The web editor is simpler than Android Studio, which quietly does several jobs as you type. Read this once, because it explains most of the errors people hit.
@@ -307,7 +326,7 @@ The web editor is simpler than Android Studio, which quietly does several jobs a
 | Offers to add an import when you paste code | You add each import line yourself |
 | Picks between two classes with the same name | You must use the exact import line from the step |
 | Underlines mistakes in red as you type | Nothing is underlined. Mistakes show in the Build log after you save. |
-| Completes names as you type | No completion. Copy and paste the code. |
+| Completes names as you type | No completion. Copy and paste the code, or click **Insert** on the block. |
 | Tidies indentation and removes unused imports | Nothing is tidied. Indentation does not affect the build, and an unused import is harmless. |
 
 **What an import is**
@@ -364,8 +383,9 @@ Do this in the Editor tab.
 1. Go to `shared/build.gradle.kts`. It is the first tab in the Code area. If you closed it, go to the Explorer, click the `shared` folder, then the `build.gradle.kts` file inside it. The line of small text above the code must read `shared > build.gradle.kts`.
 2. Find the comment `// 3 Add the dependency for Kotlin FHIR Data Capture`. It is on line 46.
 3. Click at the end of that comment line and press Enter to make a new line under it.
-4. Paste this one line.
+4. Paste this one line. You can also click **Insert** on the block, which does steps 2 to 4 for you.
 
+   <!-- codelab-insert file="shared/build.gradle.kts" after="// 3 Add the dependency for Kotlin FHIR Data Capture" -->
    ```kotlin
    implementation("dev.ohs.fhir:fhir-data-capture:2.0.0-alpha05")
    ```
@@ -424,6 +444,7 @@ Start with the three imports this step needs. The web editor does not add import
 2. Find the `// 4 Imports for the Questionnaire composable` comment. It is on line 52, just under the import lines. You can also press Ctrl+F and type `// 4 Imports`.
 3. Replace that comment with the following code. The first line puts the comment back, so the imports end up right under it.
 
+   <!-- codelab-insert file="shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt" replace="// 4 Imports for the Questionnaire composable" -->
    ```kotlin
    // 4 Imports for the Questionnaire composable
    import dev.ohs.fhir.datacapture.Questionnaire
@@ -473,6 +494,7 @@ The three steps below make this change. These notes tell you where each thing th
     can also delete the `androidx.compose.ui.Alignment` import, which is no longer used.
 3.  Add the following code in its place:
 
+    <!-- codelab-insert file="shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt" replace="// 4 Replace with code from the codelab to display the questionnaire." then="Text(" -->
     ```kotlin
     // 4 Display the questionnaire
     questionnaireJson?.let { questionnaireJson ->
@@ -508,9 +530,10 @@ the underlying type in the original FHIR questionnaire.
 At the moment nothing happens when you tap **Submit**. The library calls `onSubmit` when the
 button is tapped, so replace `onSubmit = {},` with the following code:
 
-1. Find the line `onSubmit = {},`. It is inside the block you pasted in Step 1, four lines under the `// 4 Display the questionnaire` comment. Press Ctrl+F and type `onSubmit` to jump to it. This piece of code does not have its own numbered comment.
+1. Find the line `onSubmit = {},`. It is inside the block you pasted in Step 1, five lines under the `// 4 Display the questionnaire` comment. Press Ctrl+F and type `onSubmit` to jump to it. This piece of code does not have its own numbered comment.
 2. Replace that one line with these five lines. Leave the `onCancel = {},` line under it in place.
 
+   <!-- codelab-insert file="shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt" replace="onSubmit = {}," -->
    ```kotlin
    onSubmit = { getQuestionnaireResponse ->
      // getQuestionnaireResponse() validates the answers first. If validation fails, the
@@ -580,6 +603,7 @@ In this section, you'll get the answers from the questionnaire as a Questionnair
 
 This step needs one import. In `App.kt`, find the `// 5 Import for the JSON encoder` comment, which sits under the imports you added in step 4. You can also press Ctrl+F and type `// 5 Import`. Replace that comment with the following code.
 
+<!-- codelab-insert file="shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt" replace="// 5 Import for the JSON encoder" -->
 ```kotlin
 // 5 Import for the JSON encoder
 import kotlinx.serialization.json.Json
@@ -595,6 +619,7 @@ Find the `// 5.1 Replace with code from the codelab to configure the JSON encode
 1. Find the comment `// 5.1 Replace with code from the codelab to configure the JSON encoder.` in `App.kt`. It is a little under the import group and just above the line `@Composable` that comes before `fun App() {`. Press Ctrl+F and type `// 5.1` to jump to it.
 2. Select that one comment line and paste this block over it.
 
+   <!-- codelab-insert file="shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt" replace="// 5.1 Replace with code from the codelab to configure the JSON encoder." -->
    ```kotlin
    // 5.1 Configure the JSON encoder
    private val json = Json {
@@ -616,6 +641,7 @@ following code:
 1. Go to `submitQuestionnaire()`. It is the last part of `App.kt`, at the very bottom of the file. Press Ctrl+F and type `// 5.2` to jump to the comment.
 2. Select that one comment line and paste these two lines over it.
 
+   <!-- codelab-insert file="shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt" replace="// 5.2 Replace with code from the codelab to print the questionnaire response." -->
    ```kotlin
    // 5.2 Print the questionnaire response
    println("response: ${json.encodeToString(questionnaireResponse)}")
@@ -678,6 +704,7 @@ To see `questionnaire.json`, click its tab, the third one in the Code area. If y
 
 This step needs two imports. In `App.kt`, find the `// 6 Imports for extracting FHIR resources` comment, which sits under the import you added in step 5. You can also press Ctrl+F and type `// 6 Imports`. Replace that comment with the following code.
 
+<!-- codelab-insert file="shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt" replace="// 6 Imports for extracting FHIR resources" -->
 ```kotlin
 // 6 Imports for extracting FHIR resources
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
@@ -695,6 +722,7 @@ comment with the following code:
 1. Go to `submitQuestionnaire()`, at the very bottom of `App.kt`. Press Ctrl+F and type `// 6 Replace` to jump to the comment. It sits under the `// 5.2 Print the questionnaire response` lines you added in step 5.
 2. Select that one comment line and paste these four lines over it.
 
+   <!-- codelab-insert file="shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt" replace="// 6 Replace with code from the codelab to extract FHIR resources from the questionnaire response." -->
    ```kotlin
    // 6 Extract FHIR resources from the questionnaire response
    val questionnaire = json.decodeFromString<FhirQuestionnaire>(questionnaireJson)
@@ -1014,7 +1042,7 @@ That is all you need to get it up and running!
 
 ### Next Steps
 
-*   Run the codelab on the other platforms: Desktop, Web and iOS
+*   Run the codelab on the other platforms, which are Android, Desktop and iOS
 *   Customize the look and feel of rendered questionnaires with `QuestionnaireConfig`
 *   Read the [conformance](https://github.com/ohs-foundation/kotlin-fhir-data-capture/blob/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/docs/conformance.md) document to see which Questionnaire and SDC
     features the library supports

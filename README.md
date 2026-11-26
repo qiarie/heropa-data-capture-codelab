@@ -23,6 +23,8 @@ Each learner gets one VM running two containers.
 | `/app/` | The app with nothing around it |
 | `/buildlog/` | A page that follows the build log. The editor embeds this page. |
 | `/output/` | A page that shows what the app printed. The editor embeds this page too. |
+| `/build.log` | The build log as plain text, which the build log page reads |
+| `/qr/` | The QR picture the start page shows |
 
 The learner loop is short. They save a file and wait for `BUILD OK` in the build log under the code. The App preview tab then reloads automatically. Builds need no command, because a watcher in the workspace starts one after every save. A learner can also start one by hand with the **Build now** button or the `build` command.
 
@@ -60,11 +62,11 @@ Building the web target needs no Android SDK. Gradle configures the Android modu
 | Search Logcat for `response:` | Read the Output tab in the editor, next to the build log |
 | Android Studio prompts you to add an import | Type or paste the import. The manual lists each one, and `fix-imports` adds them. |
 
-The editor colours Kotlin but has no code completion, no import prompts and no error underlining. Four things make up for them.
+The editor colours Kotlin but has no code completion, no import prompts and no error underlining. Five things make up for them.
 
 | Stand-in | What it does |
 |---|---|
-| Build hints | After a failed build, the panel prints a **What to do** list that names the missing or wrong import in plain words. `workspace/bin/codelab-hints` holds the rules. |
+| Build hints | After a failed build, the Build log prints a **What to do** list that names the missing or wrong import in plain words. `workspace/bin/codelab-hints` holds the rules. |
 | `build` | Starts a build without a save. The build watcher runs it, so it shows in the build log like any other. A **Build now** button in the status bar saves every open file and then runs it. |
 | `fix-imports` | Adds the imports the code in `App.kt` needs and removes the wrong `Questionnaire` import. A **Fix imports** button in the status bar runs it. |
 | `step N` | Replaces the two code files and the questionnaire with a working version of step N, from 3 to 7. |
@@ -72,9 +74,9 @@ The editor colours Kotlin but has no code completion, no import prompts and no e
 
 Step 7 of the manual is not in the published codelab. It was written for this lab to show more of what a Questionnaire can do. The learner adds four rules to `questionnaire.json`, which are two required answers, a lowest allowed date of birth, a phone question shown by skip logic, and a pattern the phone number must match. No Kotlin code changes in that step. The step ends with the learner designing a Gender question in the [Helsenorge form builder](https://skjemabygger.helsenorge.no/) and copying its JSON into the file. The learner copies one question and not the whole file, because the form builder drops the `contained` template that extraction needs. `maxLength` was left out on purpose, because version `2.0.0-alpha05` of the library prints a broken error message for it.
 
-The image build also adds one build setting, `kotlin.incremental.wasm=true`, to `codelabs/gradle.properties`, in the same commit as the numbered import comments. A build after a small edit then rebuilds only what the edit changed. Kotlin 2.3.21 marks the setting as experimental. If a build ever leaves a stale app in the App preview tab, remove that line from the image build in `workspace/Dockerfile` and build the image again.
+The image build also adds one build setting, `kotlin.incremental.wasm=true`, to `codelabs/gradle.properties`, in the same commit as the numbered import comments. A build after a small edit then rebuilds only what the edit changed. Kotlin 2.3.21 marks the setting as experimental. If a build ever leaves a stale app in the App preview tab, remove that line from the image build in `workspace/Dockerfile`, remove the lines that add it again at start-up in `workspace/bin/workspace-entrypoint`, and build the image again. A lab that already ran keeps the line in its volume, so run `./lab-init.sh --reset` there.
 
-The most common mistake is importing `dev.ohs.fhir.model.r4.Questionnaire` in step 4. The form and the FHIR model class share that name, and Android Studio would have offered the choice. The manual has an exercise on this, named "What this editor does not do for you".
+The most common mistake is importing `dev.ohs.fhir.model.r4.Questionnaire` in step 4. The form and the FHIR model class share that name, and Android Studio would have offered the choice. The manual covers this in exercise 2, under "What this editor does not do for you".
 
 ## Repository layout
 
@@ -82,13 +84,19 @@ The most common mistake is importing `dev.ohs.fhir.model.r4.Questionnaire` in st
 |---|---|
 | `provision-heropa.sh` | Installs Docker on the VM and builds the workspace image |
 | `lab-init.sh` | Works out the lab address, gets the certificate, creates the editor password and starts the lab |
+| `.env.example` | Every setting with its options and default. `lab-init.sh` copies its values into `.env` on the first run. |
 | `docker-compose.yml` | The two containers and the volume that holds the learner's work |
 | `workspace/Dockerfile` | The workspace image, pinned to one commit of the codelab |
-| `workspace/bin/` | The build watcher, the build hints, the `fix-imports` and `step` helpers and the container entry point |
+| `workspace/bin/` | The build watcher, the build hints, the `build`, `build-log`, `fix-imports` and `step` helpers and the container entry point |
 | `workspace/solutions/` | The two codelab files as they stand at the end of steps 3 to 6, the questionnaire as it stands at the end of step 7, and the starter `App.kt` with the numbered import comments added |
-| `workspace/ide/` | Editor settings and the small extension that lays out the code, build log and manual |
-| `nginx/` | The path routes and the static pages, which are the start page, the app preview, the build log, the output and the waiting page |
+| `workspace/ide/` | Editor settings, the shell settings for the Terminal and the small extension that lays out the code, build log and manual |
+| `nginx/` | The HTTPS and plain HTTP fronts, the path routes and the static pages, which are the start page, the app preview, the build log, the output and the waiting page |
 | `course-manual.md` | The learner manual, shaped as Heropa Sections and Exercises |
+| `images/` | The pictures the manual shows from this repository, mounted next to the manual in the editor |
+| `tools/manual-to-html.py` | Turns the manual into HTML for Heropa |
+| `heropa-html/` | The output of that script. Do not edit it by hand. |
+
+The lab also makes four things that git ignores. They are `.env` with the settings and password of this VM, `certs/` with the certificate and the certbot logs, `letsencrypt/` with the state of certbot, and `nginx/html/qr/` with the QR picture.
 
 ## Step 1 · Get a VM image
 
@@ -123,8 +131,8 @@ Launch an environment from the template and open the VM's terminal.
 1. Put this repository on the VM and run the provisioning script.
 
    ```bash
-   git clone <this repository> ~/sdc-codelab
-   cd ~/sdc-codelab
+   git clone https://github.com/qiarie/heropa-data-capture-codelab.git ~/heropa-data-capture-codelab
+   cd ~/heropa-data-capture-codelab
    sudo ./provision-heropa.sh
    ```
 
@@ -193,7 +201,7 @@ Since the last run
 | Line | What it can say |
 |---|---|
 | Address | The same as before, or `CHANGED` with the old address and what to do |
-| Password | Always the same. It is made once and kept in `.env`. |
+| Password | Always the same. It is made once and kept in `.env`. With `IDE_AUTH=none` the line says no password is asked for. |
 | Your code | Kept, or replaced with the starter after `--reset` |
 | Mode | Shown only when the lab moved from reduced mode back to full mode |
 
@@ -213,7 +221,7 @@ Every new IP means a new certificate, so `./lab-init.sh` makes up to three tries
 
 Try 1 counts against a limit that every sslip.io name in the world shares. Let's Encrypt has raised it to 250,000, so a refusal is rare but possible. Try 2 is counted per IP, apart from that limit. Its certificates last six days, which is longer than a lab.
 
-In reduced mode the browser shows a warning page once, and the editor has no Guide, Build log or Output pane. Browsers refuse the editor's web views on an untrusted certificate, even after the warning is accepted. The Build log and Output buttons open browser pages instead, the guide opens as plain text, and a notice in the editor says why. The script ends with a message headed `REDUCED MODE` that names the cause and lists the pages to use. The manual covers this under **If the lab starts in reduced mode**.
+In reduced mode the browser shows a warning page once, and the editor has no Guide, Build log or Output pane. Browsers refuse the editor's web views on an untrusted certificate, even after the warning is accepted. The Build log and Output buttons open browser pages instead, the guide opens as plain text, and a notice in the editor says why. The summary says `REDUCED MODE` in its first line and ends with a part headed `Why reduced mode`, which names the cause and lists the pages to use. The manual covers this under **If the lab starts in reduced mode**.
 
 The script avoids needless requests.
 
@@ -228,7 +236,7 @@ A failed request no longer leaves the lab down. To see reduced mode without wait
 
 `course-manual.md` is written for the Heropa lab and its web editor. The lab instructions are the main text. Anyone who wants to use Android Studio is sent to the published codelab on the website instead.
 
-Heropa's course editor takes HTML, so the manual is converted before it is pasted in. Run `python3 tools/manual-to-html.py` from the repository root after every change to the manual. It writes the whole manual to `heropa-html/course-manual.html` and one file for each numbered section to `heropa-html/sections/`. Paste a file into the source view of the Heropa editor, not the visual view, so the editor keeps the markup as written. The script needs the `python3-markdown-it` package.
+Heropa's course editor takes HTML, so the manual is converted before it is pasted in. Run `python3 tools/manual-to-html.py` from the repository root after every change to the manual. It writes the whole manual to `heropa-html/course-manual.html` and one file for each section to `heropa-html/sections/`. The first of those files holds the title and the introduction above step 1, and the last holds Troubleshooting. It also writes `heropa-html/get-started.html`, which holds the introduction, Before you begin and Get set up in one page and ends with a note that sends the learner to the Guide in the Editor for the remaining steps. Publish that one page when the Heropa course should stop after the setup. Paste a file into the source view of the Heropa editor, not the visual view, so the editor keeps the markup as written. The script needs the `python3-markdown-it` package.
 
 It is built on the published codelab. It keeps the codelab's explanations, steps and code, and leaves out the passages that only make sense in Android Studio or on a learner's own computer. Those were the list of tools, the download, the import into Android Studio, running on a device, the commands for other platforms, the Gradle sync, the three import prompts, the Run button and the two Logcat searches. The lab text covers each of those jobs in the way the web editor does it.
 
@@ -258,7 +266,7 @@ The manual maps onto Heropa content as one Section, with one Exercise for each s
 | 8 | Congratulations |
 | 9 | Troubleshooting |
 
-Load it as Custom content by pasting each exercise into the rich text editor, or publish it through GitBook and add it as External content. The two pictures load from GitHub at the pinned commit, so they need no upload. The two form builder pictures in step 7 are files in `images/`. The lab mounts that folder next to the manual, so the Guide shows them. Heropa cannot reach them there, so upload both to Heropa and point the two `img` tags of exercise 7 at the uploaded copies.
+Load it as Custom content by pasting the HTML of each exercise into the source view of the Heropa editor, or publish it through GitBook and add it as External content. The two pictures load from GitHub at the pinned commit, so they need no upload. The two form builder pictures in step 7 are files in `images/`. The lab mounts that folder next to the manual, so the Guide shows them. Heropa cannot reach them there, so upload both to Heropa and point the two `img` tags of exercise 7 at the uploaded copies.
 
 The text taken from the published codelab keeps its own punctuation and line breaks. Only the text written for the lab follows this repository's prose rule.
 
@@ -272,7 +280,7 @@ VS Code has no setting that opens files or pages when it starts, so a small exte
 
 | Area | How it is made |
 |---|---|
-| Guide | The Markdown preview that ships with the editor, opened on `course-manual.md`. The extension adds a Copy button to each code block and shows one step at a time. |
+| Guide | The Markdown preview that ships with the editor, opened on `course-manual.md`. The extension adds a Copy button to each code block except sample output, an Insert button to the blocks the manual marks, and shows one step at a time. |
 | Build log | A web view that frames `/buildlog/` |
 | Output | A web view that frames `/output/` |
 | Terminal | An ordinary terminal, placed in a tab next to the output |
@@ -285,6 +293,30 @@ The app runs in one browser tab and the Output tab sits in another, so the outpu
 
 To change the default sizes, edit `LAYOUT` near the top of `extension/extension.js` and rebuild the image.
 
+### The Insert button
+
+A code block in the Guide gets an **Insert** button when the manual has a marker on the line above it. The button puts the block into the learner's file, so copy and paste becomes optional. The marker is an HTML comment, which the Guide does not show.
+
+```markdown
+<!-- codelab-insert file="shared/build.gradle.kts" after="// 3 Add the dependency for Kotlin FHIR Data Capture" -->
+```
+
+| Part | Meaning |
+|---|---|
+| `file` | The file the code goes into, counted from the `codelabs` folder |
+| `after` | The code goes on a new line under the line with this text |
+| `replace` | The code takes the place of the line with this text |
+| `then` | Used with `replace`. The next line is removed too when it starts with this text. |
+| `through` | Used with `replace`. Every line down to the one with this text is removed too. |
+
+The marker needs `file` and one of `after` and `replace`. A line of the file matches when its text is the same once the spaces around it are dropped. The new code takes the indent of that line. The file is left unsaved, and the learner saves it to start the build.
+
+The button looks for text and never for a line number, so it still works when the learner's file has moved by a few lines. When the text is gone it says so and points to **Copy**. When the block is in the file already it selects it and changes nothing.
+
+The Markdown preview gives a page inside it no way to call an extension, so the button works in a roundabout way. The extension writes one small signal file for each marked block under `~/.codelab/insert/`, and the button is a link to that file. The preview opens the link, the extension sees the new tab, closes it at once and makes the edit. The code is in `extension/insert.js`.
+
+`tools/manual-to-html.py` drops the markers, so they never reach a Heropa page. In reduced mode the Guide is plain text and has no buttons.
+
 The preview page knows when to reload because the build watcher writes its state to a small file, served at `/app-status.json`. The page polls it every second and a half. It can show what the app prints because it frames the app from the same address, which lets it listen to the app's console.
 
 The app, the build log and the status file are served without a password. Only the editor asks for one, which is a code of four digits unless you set your own. The **Settings** section below covers the password and how to turn it off.
@@ -295,7 +327,7 @@ Every setting of a lab lives in `.env`, next to `lab-init.sh`. The script copies
 
 - To change a setting on one lab, edit `.env` and run `./lab-init.sh` again.
 - To change a default for every lab started from a template, edit `.env.example` before saving the template, because `--clean` removes `.env`.
-- To change a setting for one run only, put it in front of the command, as in `LAB_CERT=none LAB_HOST=localhost ./lab-init.sh`. The script writes `IDE_AUTH`, `LAB_CERT` and the two ports back to `.env`, so those stay for later runs. Any other setting given this way lasts for that run only.
+- To change a setting for one run only, put it in front of the command, as in `LAB_CERT=none LAB_HOST=localhost ./lab-init.sh`. The script writes `IDE_AUTH`, `IDE_PASSWORD`, `LAB_CERT` and the two ports back to `.env`, so those stay for later runs. Any other setting given this way lasts for that run only.
 
 Every value goes inside double quotes.
 
@@ -366,7 +398,7 @@ The section **Certificates and reduced mode** explains the tries and the fallbac
 
 - The code needs the `qrencode` package, which `provision-heropa.sh` installs. On a VM prepared before this was added, run `sudo apt-get install -y qrencode` once. Without the package the lab works as before and shows no code.
 - The code in the terminal is drawn with block characters. It appears only when the output goes to a terminal, so a log file stays clean.
-- The code on the start page is a picture, so `LAB_QR` does not affect it. The script draws it again on every run in `nginx/html/qr/`, which git ignores.
+- The code on the start page is a picture, so `LAB_QR` does not affect it. The script draws it again on every run that starts the lab, in `nginx/html/qr/`, which git ignores. A run with `--info` leaves it as it is.
 - A lab on `localhost` gets no code, because a phone cannot reach that address.
 
 ### Values the script writes

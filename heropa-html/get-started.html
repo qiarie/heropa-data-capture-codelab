@@ -1,0 +1,542 @@
+<h1>Capture and process health data with Kotlin FHIR Data Capture</h1>
+<p>This guide takes you through the codelab on the Heropa lab, where you write the code in an editor in your browser and the app runs as a web page. You install nothing.</p>
+<p>It is built on the <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published Data Capture codelab</a>, which was written for Android Studio on your own computer. This guide covers the lab only. If you would rather work in Android Studio, follow the <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published Data Capture codelab</a> instead of this guide.</p>
+<p>The codelab text comes from the <a href="https://github.com/ohs-foundation/kotlin-fhir-data-capture">Kotlin FHIR Data Capture</a> project under <code>codelabs</code> directory and is used under the Apache License 2.0.</p>
+<h2>1. Before you begin</h2>
+<h3>What you'll build</h3>
+<p>In this codelab, you're going to build a Kotlin Multiplatform app with the Kotlin FHIR Data
+Capture library. Your app will use the library to render and process FHIR Questionnaires and
+responses. The same code runs on Android, iOS, Desktop (JVM) and Web (Wasm and JS).</p>
+<p>This lab focuses on the Web (Wasm) version. Wasm is short for WebAssembly, the format that lets the app run inside your browser. Every build on the lab produces that version only, and the other platforms are not built here.</p>
+<h3>What you'll learn</h3>
+<ul>
+<li>How to integrate Kotlin FHIR Data Capture library into your Kotlin Multiplatform application</li>
+<li>How to display a Questionnaire</li>
+<li>How to get answers as a QuestionnaireResponse</li>
+<li>How to extract FHIR resources from a QuestionnaireResponse</li>
+<li>How to add validation and skip logic to a Questionnaire</li>
+<li>How to design a question in a form builder and add it to a Questionnaire</li>
+</ul>
+<h3>What you'll need</h3>
+<p>On the lab you need only a recent version of Chrome, Edge, Brave, Firefox or Safari. The app uses WebAssembly features that older browsers lack.</p>
+<p>You do not need to know Kotlin. Every change is given in full, and this guide says exactly which file to open and where to put each line.</p>
+<p>This codelab is focused on
+<a href="https://github.com/ohs-foundation/kotlin-fhir-data-capture">Kotlin FHIR Data Capture</a>.
+Non-relevant concepts and code blocks are glossed over and are provided for you to simply copy and
+paste. If you haven't built a Kotlin Multiplatform app before, you can start by
+<a href="https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform-create-first-app.html">creating your first Compose Multiplatform app</a>.</p>
+<h2>2. Get set up</h2>
+<h3>Start your lab</h3>
+<ol>
+<li>
+<p>Open the terminal of your lab VM in Heropa.</p>
+</li>
+<li>
+<p>Start the lab.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">cd ~/heropa-data-capture-codelab
+./lab-init.sh
+</code></pre>
+</li>
+<li>
+<p>Wait about a minute. The command ends with a summary like the example below. The addresses and the password in the example are placeholders and do not work. Use the ones your own terminal prints.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">------------------------------------------------------------------------
+The lab is ready. Open these in the browser on your own computer.
+
+  Editor            https://203-0-113-10.sslip.io/ide/
+  Editor password   4827
+  App preview       https://203-0-113-10.sslip.io/preview/
+
+  Scan the QR code to preview the app on your phone
+  [QR code]
+
+First steps
+  1. Open the Editor address and enter the password.
+  2. Click Open app preview at the very bottom of the Editor. The app
+     opens in a second tab.
+
+Lost these details? Run ./lab-init.sh --info to print them again.
+The tabs stopped loading? Run ./lab-init.sh again. It is safe at any time.
+------------------------------------------------------------------------
+</code></pre>
+</li>
+</ol>
+<p style="border-left: 4px solid #e0a800; background: #fff8e1; padding: 8px 12px;"><strong>The addresses and password in this manual are examples only.</strong> Wherever you see <code>203-0-113-10.sslip.io</code>, <code>203.0.113.10</code> or the password <code>4827</code>, use the values from your own summary instead. Your addresses and password are your own. You can get them back at any time, and the section <em>Find your addresses again</em> below explains how.</p>
+<p>Where the example shows <code>[QR code]</code>, your terminal draws a real QR code for the App preview. Scan it with the camera of a phone or tablet to open the App preview there without typing the address. The start page of your lab, which is the address with nothing after the name, shows the same code. The App preview on a phone is for a look only. What it prints does not reach the Output tab on your computer. If the code looks like broken characters in your terminal, ignore it and type the address.</p>
+<h3>Open the editor and the app</h3>
+<p>You work in two browser tabs, one for the Editor and one for the App preview.</p>
+<ol>
+<li>Open the <strong>Editor</strong> address in a new tab. Type the editor password, which is a code of four digits, and press <strong>Submit</strong>. If the summary shows <code>none needed</code> instead of a password, the Editor opens without asking.</li>
+<li>In the bar at the very bottom of the Editor, click <strong>Open app preview</strong>. The app opens in a second tab. If your browser blocks the new tab, allow it, or open the <strong>App preview</strong> address yourself.</li>
+</ol>
+<p>If you have room, put the two tabs side by side in separate windows.</p>
+<p>The Editor tab has six areas. The Build log, the Output and the Terminal share the space under the code, and you switch between them by clicking their tabs.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Area</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Where</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it is for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Explorer</td>
+<td style="border: 1px solid #333; padding: 8px;">Far left</td>
+<td style="border: 1px solid #333; padding: 8px;">The project files</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Code</td>
+<td style="border: 1px solid #333; padding: 8px;">Top centre</td>
+<td style="border: 1px solid #333; padding: 8px;">The file you are changing</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Build log</td>
+<td style="border: 1px solid #333; padding: 8px;">Bottom centre</td>
+<td style="border: 1px solid #333; padding: 8px;">Shows each build and whether it worked</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Output</td>
+<td style="border: 1px solid #333; padding: 8px;">Bottom centre, the tab next to Build log</td>
+<td style="border: 1px solid #333; padding: 8px;">Shows what the app prints when you click <strong>Submit</strong>. You read the JSON here in steps 5 and 6.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Terminal</td>
+<td style="border: 1px solid #333; padding: 8px;">Bottom centre, the tab next to Output</td>
+<td style="border: 1px solid #333; padding: 8px;">For typing commands</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Guide</td>
+<td style="border: 1px solid #333; padding: 8px;">Right</td>
+<td style="border: 1px solid #333; padding: 8px;">This guide, one step at a time. <strong>Back</strong> and <strong>Next</strong> move between the steps, the list between them jumps to any step, and <strong>Show all</strong> puts the whole guide on one page.</td>
+</tr>
+</tbody>
+</table>
+<p>You can drag the borders between the areas to resize them. The bar at the very bottom has six buttons.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Button</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Open app preview</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Opens the App preview tab</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Build now</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Saves every open file and builds the app straight away. You rarely need it, because saving a file starts a build automatically.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Guide</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Brings the Guide back if you closed it</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Build log</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Brings the Build log back if you closed it</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Output</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Brings the Output tab back if you closed it</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Fix imports</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Adds the import lines your code needs. A later part explains imports.</td>
+</tr>
+</tbody>
+</table>
+<p>The App preview tab has a bar along the top and a strip along the bottom.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Control</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Status dot</td>
+<td style="border: 1px solid #333; padding: 8px;">Green when the app matches your code, amber while a build runs, red when the last build failed</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Auto refresh</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">When ticked, the app reloads automatically after every successful build</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Refresh</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Reloads the app now</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Output</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">The strip along the bottom, which shows whatever the app prints. The Output tab in the Editor shows the same thing.</td>
+</tr>
+</tbody>
+</table>
+<h3>Find your addresses again</h3>
+<p>Come here when you return to the lab after a break, when the Editor or App preview tab stops loading, or when you have lost the addresses or the password.</p>
+<p>The lab VM stops when you close the course, when you stop it yourself, and when it sits idle for a while. Your code stays on it. The VM is set up to keep the same IP address, so the same addresses normally work again once it is running.</p>
+<p>If you only lost the addresses or the password, ask the lab to print them again. Open the terminal of the VM and run these two commands. They answer at once and restart nothing.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">cd ~/heropa-data-capture-codelab
+./lab-init.sh --info
+</code></pre>
+<p>The <code>--info</code> option prints the addresses the lab last used. It does not check whether the address of the VM changed. If the tabs do not load at those addresses, follow the steps below.</p>
+<ol>
+<li>
+<p>Open the course in Heropa and start the VM if it is stopped. Give it a minute.</p>
+</li>
+<li>
+<p>Reload the Editor and App preview tabs. If they load, you are done.</p>
+</li>
+<li>
+<p>If they do not load, open the terminal of the VM and run the same two commands you used to start the lab, this time without <code>--info</code>.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">cd ~/heropa-data-capture-codelab
+./lab-init.sh
+</code></pre>
+</li>
+<li>
+<p>Read the summary it prints. The lines under <strong>Since the last run</strong> tell you what to do.</p>
+</li>
+</ol>
+<p>When the address is the same, the summary says so. Reload your tabs, or open the addresses again.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">Since the last run
+  Address    The same as before. Tabs you still have open work again after
+             a reload.
+  Password   The same as before.
+  Your code  Kept as you left it.
+</code></pre>
+<p>When the VM came back with a different IP address, the summary says <code>CHANGED</code> and shows the old address. The address in this example is a placeholder. Close the old Editor and App preview tabs, because they no longer work, and so do bookmarks to them. Open the new <strong>Editor</strong> address from the top of the summary, enter the password, and click <strong>Open app preview</strong>.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">Since the last run
+  Address    CHANGED. It was https://203-0-113-10.sslip.io
+             Close the old Editor and App preview tabs. They no longer work.
+             Open the two addresses above.
+  Password   The same as before.
+  Your code  Kept as you left it.
+</code></pre>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">After the VM restarts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Editor and App preview addresses</td>
+<td style="border: 1px solid #333; padding: 8px;">Normally the same. The summary says <code>CHANGED</code> when they are not.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Editor password</td>
+<td style="border: 1px solid #333; padding: 8px;">Always the same</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Your code</td>
+<td style="border: 1px solid #333; padding: 8px;">Always kept as you left it</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Build log</td>
+<td style="border: 1px solid #333; padding: 8px;">Starts empty, and fills again at the next build</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Output</td>
+<td style="border: 1px solid #333; padding: 8px;">Keeps its earlier entries when the address is the same. A new address starts it empty, and it fills again at the next <strong>Submit</strong>.</td>
+</tr>
+</tbody>
+</table>
+<p>The command is safe to run at any time and as often as you like. When the address is the same it takes a few seconds and your code, password and addresses stay as they were. Reload any tab that stopped for a moment. When the address changed it takes about a minute, because it gets a certificate for the new address.</p>
+<p>Always copy the addresses from the summary. They are made from the IP address of the VM, normally with dashes instead of dots and <code>.sslip.io</code> at the end, so an example IP of <code>203.0.113.10</code> would give <code>https://203-0-113-10.sslip.io/ide/</code>. Sometimes the summary shows the plain IP, such as <code>https://203.0.113.10/ide/</code>, with a note that says why. Those addresses work in exactly the same way.</p>
+<h3>If the lab starts in reduced mode</h3>
+<p>The Editor needs a certificate that your browser trusts. The lab asks for one each time the address changes. Occasionally it cannot get one, usually because the service that issues them is over its limit. The lab then makes its own certificate and starts in <strong>reduced mode</strong>, and the first line of the summary from <code>./lab-init.sh</code> says <code>REDUCED MODE</code>. It also gives the reason, the pages to use, and when to try again.</p>
+<p>Your code, the build and the app all work in reduced mode. Two things are different.</p>
+<ol>
+<li>Your browser shows a warning page the first time you open the Editor address. Click <strong>Advanced</strong>, then <strong>Proceed</strong>. You do this once. The warning appears because the lab made its own certificate, and it is expected here.</li>
+<li>The Editor has no Guide, Build log or Output area, because browsers block them on a certificate they do not trust. A notice in the Editor says so. Use these in their place.</li>
+</ol>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">In full mode</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">In reduced mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Guide area in the Editor</td>
+<td style="border: 1px solid #333; padding: 8px;">This manual in Heropa. The <strong>Guide</strong> button also opens it in the Editor as plain text.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Build log area in the Editor</td>
+<td style="border: 1px solid #333; padding: 8px;">The <strong>Build log</strong> address that <code>./lab-init.sh</code> prints, in a separate browser tab. The <strong>Build log</strong> button opens it.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Output area in the Editor</td>
+<td style="border: 1px solid #333; padding: 8px;">The <strong>Output</strong> strip along the bottom of the App preview tab</td>
+</tr>
+</tbody>
+</table>
+<p>Everything else in this manual applies as written. Where a step says to look at the Build log or the Output tab, look at the page from the table.</p>
+<p>To get back to full mode, run <code>./lab-init.sh</code> again later. When it was refused for being over a limit, the summary gives the time to try again under <strong>To get full mode</strong>. That run asks for a certificate again and puts the lab back in full mode when it gets one. The addresses may change when that happens, so open the ones it prints.</p>
+<h3>Download the Code</h3>
+<p>There is nothing to download on the lab. The code is already there, and the Editor opens on the <code>codelabs</code> folder. The Explorer on the left shows what is inside it. It leaves out the <code>iosApp</code> folder, which the lab does not use.</p>
+<h3>Project structure</h3>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Module</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>shared</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Kotlin Multiplatform module. <code>commonMain</code> holds the <code>App()</code> composable and the questionnaire.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>androidApp</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Android application. <code>MainActivity</code> calls <code>setContent { App() }</code>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>desktopApp</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Desktop (JVM) application. <code>main()</code> opens a window that shows <code>App()</code>.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>webApp</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Web application for Wasm and JS. <code>main()</code> shows <code>App()</code> in the browser page.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>iosApp</code></td>
+<td style="border: 1px solid #333; padding: 8px;">Xcode project for iOS. It shows <code>App()</code> through <code>MainViewController()</code> in <code>shared/src/iosMain</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The platform modules are just entry points. Everything you'll write in this codelab goes into two
+files of the <code>shared</code> module:</p>
+<ul>
+<li><code>shared/build.gradle.kts</code></li>
+<li><code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code></li>
+</ul>
+<p>Each place you'll change is marked with a numbered comment, such as
+<code>// 4 Replace with code from the codelab to display the questionnaire.</code> The number tells you which
+step of the codelab adds the code.</p>
+<p>The questionnaire is stored as a
+<a href="https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform-resources.html">Compose Multiplatform resource</a>
+at <code>shared/src/commonMain/composeResources/files/questionnaire.json</code>, so every platform can read it.</p>
+<p>The three files you work in are already open when the Editor starts. They are tabs along the top of the Code area, in the order <code>build.gradle.kts</code>, <code>App.kt</code>, <code>questionnaire.json</code>. Click a tab to show its file.</p>
+<p>If you closed a tab, open the file again from the Explorer. A path such as <code>shared/build.gradle.kts</code> tells you which folders to open in the Explorer, from left to right. Click a folder to open it, and click a file to show it in the Code area.</p>
+<h4>To open <code>shared/build.gradle.kts</code></h4>
+<ol>
+<li>In the Explorer, click the <code>shared</code> folder to open it.</li>
+<li>Click the <code>build.gradle.kts</code> file that sits inside <code>shared</code>.</li>
+</ol>
+<p>The project has several files named <code>build.gradle.kts</code>. One sits lower in the Explorer, outside every folder, and there is one in each of the other app folders. The one you need is inside <code>shared</code>. Check the line of small text above the code. It must read <code>shared &gt; build.gradle.kts</code>.</p>
+<h4>To open <code>shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt</code></h4>
+<p>Open <code>shared</code>, then <code>src</code>, then <code>commonMain</code>, then the folder shown as <code>kotlin/dev/ohs/fhir/codelab</code>, and click <code>App.kt</code>.</p>
+<h3>Import the app into Android Studio</h3>
+<p>There is nothing to import on the lab. The Editor tab takes the place of Android Studio, and the project is already open in it.</p>
+<h3>Run the starter app</h3>
+<p>The starter app is already running on the lab as a web page. Look at the App preview tab, which shows a purple bar and the words <strong>Hello World!</strong></p>
+<p>As you can see there isn't much here yet, so let's get right into displaying a questionnaire in
+your app!</p>
+<p>The picture below shows the same app on an Android phone.</p>
+<p><img src="https://raw.githubusercontent.com/ohs-foundation/kotlin-fhir-data-capture/15d534d67c0acdf9a7e264aee53d1320c91ab5cc/codelabs/images/image3.png" alt="The Hello World app on an Android phone" style="max-width: 100%; height: auto; border: 1px solid #ddd;" /></p>
+<h3>Run the app on other platforms</h3>
+<p>The lab builds and runs the Web (Wasm) version of the app and no other. You do not type any command. The lab builds the app automatically every time you save a file, as the next part explains.</p>
+<p>The app is built with Kotlin Multiplatform, so the same code also runs on Android, iOS and Desktop. The <a href="https://ohs-foundation.github.io/ohs-docs/tutorials-and-codelabs/data-capture/">published codelab</a> shows how to run it on each of them.</p>
+<h3>How to run the app</h3>
+<p>You do the same four things for every step of the codelab.</p>
+<ol>
+<li>Change a file in the Code area.</li>
+<li>Save it with Ctrl+S, or Cmd+S on a Mac. Saving starts a build.</li>
+<li>Watch the Build log under the code. It prints <code>Building the app</code> and then, after up to a minute, <code>BUILD OK</code>.</li>
+<li>Switch to the App preview tab. It has reloaded automatically and shows the new version.</li>
+</ol>
+<p style="border-left: 4px solid #4a90d9; background: #eef5fc; padding: 8px 12px;"><strong>Builds are automatic.</strong> The lab watches the project files. Every time you save one, it builds the app again and the App preview tab reloads. There is no Run button to press and no command to type. A change you have not saved is not built. A white dot on a file's tab marks unsaved changes, so while you see it the app does not have that change yet.</p>
+<p>If you save again while a build is running, the lab finishes that build and then runs one more, so your latest change is never missed.</p>
+<h3>Start a build yourself</h3>
+<p>You rarely need to, but you can start a build without changing a file. Do this when you are not sure a build ran, when the Build log shows nothing new after a save, or when you want to see the result of the last build again.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Way</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Button</td>
+<td style="border: 1px solid #333; padding: 8px;">Click <strong>Build now</strong> in the bar at the very bottom of the Editor. It saves every open file first, then builds.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Command</td>
+<td style="border: 1px solid #333; padding: 8px;">Click the <strong>Terminal</strong> tab, type <code>build</code> and press Enter. This builds the files as they were last saved.</td>
+</tr>
+</tbody>
+</table>
+<p>Either way, the build appears in the Build log like any other, and ends with <code>BUILD OK</code> or <code>BUILD FAILED</code>. When nothing changed since the last build, it finishes in a few seconds.</p>
+<h3>When a build fails</h3>
+<p>If the Build log prints <code>BUILD FAILED</code>, look just above it for lines that start with <code>e</code>. Each one names the file, the line number and the problem. Under them, a <strong>What to do</strong> list explains the common ones in plain words. Fix the file and save again. The App preview tab keeps showing the last version that worked.</p>
+<h3>If you have used Android Studio</h3>
+<p>This table shows what takes the place of each thing you know.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">In Android Studio</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">On the lab</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Open Android Studio</td>
+<td style="border: 1px solid #333; padding: 8px;">Use the Editor tab</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Click <strong>Run</strong> in the Android Studio toolbar</td>
+<td style="border: 1px solid #333; padding: 8px;">Save the file, wait for <code>BUILD OK</code>, look at the App preview tab. <strong>Build now</strong> does the same without a change.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Select <strong>Sync Project with Gradle Files</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Save the file. Saving does the sync.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Search Logcat</td>
+<td style="border: 1px solid #333; padding: 8px;">Read the <strong>Output</strong> tab in the Editor, next to the Build log</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Tap <strong>Submit</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Click <strong>Submit</strong></td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Android Studio prompts you to add the necessary imports</td>
+<td style="border: 1px solid #333; padding: 8px;">Paste the import lines yourself, under the numbered comment the step names</td>
+</tr>
+</tbody>
+</table>
+<h3>Two ways to put code into your file</h3>
+<p>A block of code in the Guide has a <strong>Copy</strong> button in its top right corner. A block that only shows sample output has none. Many blocks in steps 3 to 6 also have an <strong>Insert</strong> button next to it.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Button</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Copy</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Copies the code. You then click in your file at the place the step names and paste with Ctrl+V.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Insert</strong></td>
+<td style="border: 1px solid #333; padding: 8px;">Puts the code into your file for you, at the place the step names. It brings the file to the front and selects the new code so you can see what changed.</td>
+</tr>
+</tbody>
+</table>
+<p>Use whichever you like. The steps describe the copy and paste way in full, and <strong>Insert</strong> does the same thing in one click.</p>
+<ul>
+<li><strong>Insert</strong> does not save the file. Press Ctrl+S afterwards, as each step says, and the build starts.</li>
+<li>Ctrl+Z takes the code out again.</li>
+<li>A second click changes nothing. A message says the code is already there.</li>
+<li>If <strong>Insert</strong> cannot find the place, a message says so. This happens when an earlier step is missing or the line it looks for was changed. Use <strong>Copy</strong> then.</li>
+</ul>
+<p>A block that only shows what your file should look like has no <strong>Insert</strong> button. Step 7 has none either, because there you edit the file by hand.</p>
+<h3>What this editor does not do for you</h3>
+<p>The web editor is simpler than Android Studio, which quietly does several jobs as you type. Read this once, because it explains most of the errors people hit.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Android Studio does this</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">On the lab</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Offers to add an import when you paste code</td>
+<td style="border: 1px solid #333; padding: 8px;">You add each import line yourself</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Picks between two classes with the same name</td>
+<td style="border: 1px solid #333; padding: 8px;">You must use the exact import line from the step</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Underlines mistakes in red as you type</td>
+<td style="border: 1px solid #333; padding: 8px;">Nothing is underlined. Mistakes show in the Build log after you save.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Completes names as you type</td>
+<td style="border: 1px solid #333; padding: 8px;">No completion. Copy and paste the code, or click <strong>Insert</strong> on the block.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;">Tidies indentation and removes unused imports</td>
+<td style="border: 1px solid #333; padding: 8px;">Nothing is tidied. Indentation does not affect the build, and an unused import is harmless.</td>
+</tr>
+</tbody>
+</table>
+<h4>What an import is</h4>
+<p>Code refers to things by short names, such as <code>Questionnaire</code>. An import line says which library a short name comes from. If the import is missing, the build fails with <code>Unresolved reference</code>.</p>
+<h4>Where import lines go</h4>
+<p>All import lines sit together near the top of <code>App.kt</code>, each starting with the word <code>import</code>. In the starter code they run from line 18 to line 50. Right under them, the lab has put one numbered comment for each step that needs imports.</p>
+<pre style="background: #f6f8fa; border: 1px solid #ddd; padding: 12px; overflow-x: auto; white-space: pre;"><code style="white-space: pre; font-family: monospace;">import org.jetbrains.compose.resources.stringResource
+
+// 4 Imports for the Questionnaire composable
+
+// 5 Import for the JSON encoder
+
+// 6 Imports for extracting FHIR resources
+</code></pre>
+<p>Each step tells you which of these comments to paste its imports under. You never have to hunt for the right spot. The order of import lines does not matter.</p>
+<h4>One name, two meanings</h4>
+<p>Two different things in this codelab are both called <code>Questionnaire</code>.</p>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Import line</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it is</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Used in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>import dev.ohs.fhir.datacapture.Questionnaire</code></td>
+<td style="border: 1px solid #333; padding: 8px;">The form that appears on screen</td>
+<td style="border: 1px solid #333; padding: 8px;">Step 4</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>import dev.ohs.fhir.model.r4.Questionnaire as FhirQuestionnaire</code></td>
+<td style="border: 1px solid #333; padding: 8px;">The FHIR data behind the form, given a second name so the two do not clash</td>
+<td style="border: 1px solid #333; padding: 8px;">Step 6</td>
+</tr>
+</tbody>
+</table>
+<p>If <code>App.kt</code> imports <code>dev.ohs.fhir.model.r4.Questionnaire</code> without the <code>as FhirQuestionnaire</code> ending, the build fails with <code>No parameter with name 'questionnaireJson' found</code>. Delete that line and use the two lines above.</p>
+<h4>Help when you are stuck</h4>
+<table style="border-collapse: collapse; width: 100%; margin-bottom: 16px;">
+<thead>
+<tr>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">Help</th>
+<th style="border: 1px solid #333; padding: 8px; text-align: left; background: #f5f5f5;">What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><strong>Fix imports</strong> button, at the bottom of the Editor</td>
+<td style="border: 1px solid #333; padding: 8px;">Adds every import the code in <code>App.kt</code> needs and removes the wrong <code>Questionnaire</code> import. This is the closest thing to what Android Studio does.</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>step 3</code>, <code>step 4</code>, <code>step 5</code>, <code>step 6</code> or <code>step 7</code>, typed in the <strong>Terminal</strong> tab</td>
+<td style="border: 1px solid #333; padding: 8px;">Replaces the two code files and the questionnaire with a working version as they stand at the end of that step</td>
+</tr>
+<tr>
+<td style="border: 1px solid #333; padding: 8px;"><code>step reset</code>, typed in the <strong>Terminal</strong> tab</td>
+<td style="border: 1px solid #333; padding: 8px;">Puts the two code files and the questionnaire back to the starter versions</td>
+</tr>
+</tbody>
+</table>
+<p>Your own files are copied to the <code>backups</code> folder in your home folder before any of these change them.</p>
+<h2>Continue in the Editor</h2>
+<p style="border-left: 4px solid #2e7d32; background: #e8f5e9; padding: 8px 12px;"><strong>Your lab is ready, and the rest of this guide is in the Editor.</strong> Every step from step 3 on is there, and so is the troubleshooting list. They are not on this page.</p>
+<ol>
+<li>Go to the browser tab that shows the Editor.</li>
+<li>Look at the <strong>Guide</strong> area on the right. It shows this same guide, one step at a time.</li>
+<li>Click <strong>Next</strong> until you reach step 3, or pick step 3 from the list between <strong>Back</strong> and <strong>Next</strong>.</li>
+</ol>
+<p>If the Guide area is not there, click <strong>Guide</strong> in the bar at the very bottom of the Editor. In reduced mode the same button opens the guide as plain text.</p>

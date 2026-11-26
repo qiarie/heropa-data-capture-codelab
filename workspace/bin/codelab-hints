@@ -84,4 +84,4 @@ if [[ "${#hints[@]}" -gt 0 ]]; then
     echo
 fi
 printf 'To add missing imports for you, click  \033[1mFix imports\033[0m  in the bar at the bottom of the Editor.\n'
-printf 'To jump to a working version of a step, run  \033[1mstep 4\033[0m  with the number of the step.\n'
+printf 'To jump to a working version of a step, run  \033[1mstep\033[0m  followed by its number, such as  \033[1mstep 5\033[0m.\n'

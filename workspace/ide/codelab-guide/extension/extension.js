@@ -25,6 +25,7 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const { execFile } = require('child_process');
+const insert = require('./insert');
 
 const GUIDE = process.env.CODELAB_GUIDE || '/opt/codelab/guide/course-manual.md';
 // The files a learner edits, in the order the manual reaches them. They open
@@ -253,6 +254,8 @@ function activate(context) {
       },
     }),
   );
+  insert.register(context);
+
   statusButton(context, '$(link-external) Open app preview', 'Open the app you are building in a new browser tab', 'codelab.openApp', 103);
   statusButton(context, '$(play) Build now', 'Save every file and build the app now', 'codelab.buildNow', 102.5);
   statusButton(context, '$(book) Guide', 'Show the codelab guide', 'codelab.showGuide', 102);
@@ -270,6 +273,10 @@ function activate(context) {
         'Your code, the build and the app work as usual.',
     );
   }
+
+  // The Markdown preview asks for this to let the extension mark the code
+  // blocks that get an Insert button.
+  return { extendMarkdownIt: insert.extendMarkdownIt };
 }
 
 module.exports = { activate, deactivate() {} };

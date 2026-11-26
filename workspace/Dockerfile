@@ -44,8 +44,8 @@ ENV CODELAB_DIR=/home/learner/kotlin-fhir-data-capture/codelabs
 #
 # The same commit turns on incremental Wasm builds in gradle.properties. A
 # build after a small edit then rebuilds only what the edit changed. Kotlin
-# marks the switch as experimental, so remove that line if a build ever gives
-# a stale app.
+# marks the switch as experimental. If a build ever gives a stale app, remove
+# that line here and the lines that add it again in bin/workspace-entrypoint.
 RUN git init -q -b codelab kotlin-fhir-data-capture \
  && cd kotlin-fhir-data-capture \
  && git remote add origin "$CODELAB_REPO" \
@@ -60,7 +60,7 @@ RUN git init -q -b codelab kotlin-fhir-data-capture \
 
 # Warm the Gradle cache. The finished codelab is built first so the library
 # from step 3 and everything it pulls in are already downloaded. The starter is
-# built last so the App tab shows it as soon as the lab starts.
+# built last so the App preview tab shows it as soon as the lab starts.
 RUN cd "$CODELAB_DIR" \
  && cp /opt/codelab/solutions/step-6/build.gradle.kts shared/build.gradle.kts \
  && cp /opt/codelab/solutions/step-6/App.kt shared/src/commonMain/kotlin/dev/ohs/fhir/codelab/App.kt \

@@ -403,7 +403,7 @@ request_cert() {
     fi
 
     # certbot answers the check on port 80 itself, so nginx gives the port up
-    # for the minute this takes. Section 4 starts it again.
+    # for the minute this takes. Section 5 starts it again.
     if (( ! NGINX_STOPPED )); then
         docker stop sdc-nginx >/dev/null 2>&1 || true
         NGINX_STOPPED=1
@@ -510,7 +510,7 @@ fi
 # one. It never starts with 0, so nothing on the way reads it as a number and
 # drops the zero. Four digits are enough here because the editor allows only
 # a few wrong tries an hour and a lab lasts a few hours.
-IDE_PASSWORD="$(env_get IDE_PASSWORD)"
+IDE_PASSWORD="$(setting IDE_PASSWORD)"
 if [[ -z "$IDE_PASSWORD" ]]; then
     IDE_PASSWORD="$(( 1000 + $(od -An -N4 -tu4 /dev/urandom | tr -d ' ') % 9000 ))"
     info "Created a password for the editor"
@@ -657,7 +657,8 @@ What is different
        Guide       the course manual in Heropa
        Build log   the Build log address above, in its own browser tab
        Output      the strip along the bottom of the App preview tab
-     The buttons at the bottom of the Editor open these pages for you.
+     The buttons at the bottom of the Editor help too. Guide opens the
+     manual as plain text, and Build log and Output open browser tabs.
 
 To get full mode
   $again
